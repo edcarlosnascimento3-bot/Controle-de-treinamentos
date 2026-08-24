@@ -229,6 +229,31 @@ form.inline { display: inline-block; margin: 0 0 0 6px; }
 .field.checkbox input { width: auto; }
 .field.checkbox label { margin: 0; font-weight: normal; }
 
+.linha-avaliacao {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  gap: 16px;
+}
+.avaliacao-controles {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.avaliacao-controles .radio-opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: normal;
+  white-space: nowrap;
+}
+.avaliacao-controles .radio-opcao input { width: auto; margin: 0; }
+.avaliacao-controles select { width: auto; min-width: 90px; }
+@media (max-width: 720px) {
+  .linha-avaliacao { grid-template-columns: 1fr; }
+}
+
 .avatar { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--cor-primaria); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; border: 3px solid var(--cor-borda); }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
 .avatar-upload { display: flex; flex-direction: column; align-items: center; gap: 8px; }

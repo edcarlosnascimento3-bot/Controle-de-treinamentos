@@ -30,10 +30,18 @@
       {% if situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
       {% elif situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer ({{ dias }} dias)</span>
       {% elif situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+      {% elif situacao == 'Reprovado' %}<span class="badge b-roxo">Reprovado</span>
       {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
     </div>
     <div><strong>Instrutor:</strong> {{ matricula.instrutor or '—' }}</div>
-    <div><strong>Aprovado:</strong> {{ 'Sim' if matricula.aprovado else 'Não' }}</div>
+    <div>
+      <strong>Avaliação:</strong>
+      {% if matricula.tipo_avaliacao == 'prova' %}
+        Prova aplicada{% if matricula.nota is not none %} · Nota {{ matricula.nota }}/10{% endif %}
+      {% else %}
+        Avaliação pelo instrutor
+      {% endif %}
+    </div>
   </div>
   {% if matricula.observacoes %}
   <p class="mt"><strong>Observações:</strong> {{ matricula.observacoes }}</p>

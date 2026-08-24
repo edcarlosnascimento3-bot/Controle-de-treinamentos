@@ -36,6 +36,12 @@ def situacao(vencimento: date | None, hoje: date | None = None) -> str:
 
 
 def situacao_matricula(matricula: Matricula, hoje: date | None = None) -> str:
+    reprovado = (
+        (matricula.tipo_avaliacao == "prova" and matricula.nota is not None and matricula.nota < 7)
+        or (matricula.tipo_avaliacao is None and not matricula.aprovado)
+    )
+    if reprovado:
+        return "Reprovado"
     if matricula.data_realizacao is None:
         return "Não realizado"
     return situacao(matricula.data_validade, hoje)

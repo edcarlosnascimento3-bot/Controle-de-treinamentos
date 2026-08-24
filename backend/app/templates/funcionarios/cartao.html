@@ -57,6 +57,7 @@
             {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
             {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
             {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+            {% elif m._situacao == 'Reprovado' %}<span class="badge b-roxo">Reprovado</span>
             {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
             {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
           </td>

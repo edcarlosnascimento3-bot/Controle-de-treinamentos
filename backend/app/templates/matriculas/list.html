@@ -19,6 +19,7 @@
     <option value="Válido" {% if situacao == 'Válido' %}selected{% endif %}>Válido</option>
     <option value="A vencer" {% if situacao == 'A vencer' %}selected{% endif %}>A vencer</option>
     <option value="Vencido" {% if situacao == 'Vencido' %}selected{% endif %}>Vencido</option>
+    <option value="Reprovado" {% if situacao == 'Reprovado' %}selected{% endif %}>Reprovado</option>
     <option value="Não realizado" {% if situacao == 'Não realizado' %}selected{% endif %}>Não realizado</option>
     <option value="Sem validade" {% if situacao == 'Sem validade' %}selected{% endif %}>Sem validade</option>
   </select>
@@ -53,6 +54,7 @@
           {% elif m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
           {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
           {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+          {% elif m._situacao == 'Reprovado' %}<span class="badge b-roxo">Reprovado</span>
           {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
           {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
         </td>

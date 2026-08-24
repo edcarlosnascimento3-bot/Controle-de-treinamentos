@@ -22,6 +22,8 @@ class Matricula(Base):
     data_validade: Mapped[date | None] = mapped_column(Date, nullable=True, index=True)
     instrutor: Mapped[str | None] = mapped_column(String(200), nullable=True)
     aprovado: Mapped[bool] = mapped_column(Boolean, default=True)
+    tipo_avaliacao: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    nota: Mapped[int | None] = mapped_column(nullable=True)
     observacoes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 

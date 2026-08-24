@@ -33,6 +33,20 @@ def _limpar(value: str | None) -> str | None:
     return v or None
 
 
+def _ler_avaliacao(tipo_avaliacao: str, nota: str) -> tuple[str | None, int | None, bool, str]:
+    tipo = tipo_avaliacao if tipo_avaliacao in ("instrutor", "prova") else None
+    valor_nota: int | None = None
+    if tipo == "prova":
+        try:
+            valor_nota = int(nota)
+        except ValueError:
+            return None, None, False, "Selecione a nota da prova (1 a 10)."
+        if not 1 <= valor_nota <= 10:
+            return None, None, False, "A nota da prova deve ser entre 1 e 10."
+    aprovado = not (tipo == "prova" and valor_nota is not None and valor_nota < 7)
+    return tipo, valor_nota, aprovado, ""
+
+
 def _detalhe_cadastro(db: Session):
     return {
         "funcionarios": db.query(Funcionario).filter(Funcionario.ativo == True).order_by(Funcionario.nome).all(),
@@ -108,7 +122,8 @@ def criar(
     treinamento_id: int = Form(...),
     data_realizacao: str = Form(""),
     instrutor: str = Form(""),
-    aprovado: str = Form("on"),
+    tipo_avaliacao: str = Form("instrutor"),
+    nota: str = Form(""),
     observacoes: str = Form(""),
     user: User = Depends(PERM),
     db: Session = Depends(get_db),
@@ -122,13 +137,19 @@ def criar(
     if not data:
         return RedirectResponse("/matriculas/nova?erro=Informe+a+data+de+realização.", status_code=303)
 
+    tipo, valor_nota, aprovado, erro_avaliacao = _ler_avaliacao(tipo_avaliacao, nota)
+    if erro_avaliacao:
+        return RedirectResponse(f"/matriculas/nova?erro={quote(erro_avaliacao)}", status_code=303)
+
     m = Matricula(
         funcionario_id=f.id,
         treinamento_id=t.id,
         data_realizacao=data,
         data_validade=calcular_data_validade(data, t.validade_meses),
         instrutor=_limpar(instrutor),
-        aprovado=aprovado == "on",
+        aprovado=aprovado,
+        tipo_avaliacao=tipo or "instrutor",
+        nota=valor_nota,
         observacoes=_limpar(observacoes),
     )
     db.add(m)
@@ -186,7 +207,8 @@ def atualizar(
     treinamento_id: int = Form(...),
     data_realizacao: str = Form(""),
     instrutor: str = Form(""),
-    aprovado: str = Form("on"),
+    tipo_avaliacao: str = Form("instrutor"),
+    nota: str = Form(""),
     observacoes: str = Form(""),
     user: User = Depends(PERM),
     db: Session = Depends(get_db),
@@ -201,12 +223,18 @@ def atualizar(
     if not t:
         return RedirectResponse(f"/matriculas/{matricula_id}/editar?erro=Dados+inválidos.", status_code=303)
 
+    tipo, valor_nota, aprovado, erro_avaliacao = _ler_avaliacao(tipo_avaliacao, nota)
+    if erro_avaliacao:
+        return RedirectResponse(f"/matriculas/{matricula_id}/editar?erro={quote(erro_avaliacao)}", status_code=303)
+
     m.funcionario_id = funcionario_id
     m.treinamento_id = t.id
     m.data_realizacao = data
     m.data_validade = calcular_data_validade(data, t.validade_meses) if data else None
     m.instrutor = _limpar(instrutor)
-    m.aprovado = aprovado == "on"
+    m.aprovado = aprovado
+    m.tipo_avaliacao = tipo or "instrutor"
+    m.nota = valor_nota
     m.observacoes = _limpar(observacoes)
     db.commit()
     return RedirectResponse(f"/matriculas/{matricula_id}?ok=" + quote("Registro atualizado."), status_code=303)
