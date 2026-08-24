@@ -36,7 +36,11 @@
         <input type="text" name="instrutor" value="{{ matricula.instrutor or '' }}">
       </div>
       <div class="linha-avaliacao">
-        <div class="field">
+        <div class="field campo-observacoes">
+          <label>Observações</label>
+          <textarea name="observacoes" rows="1">{{ matricula.observacoes or '' }}</textarea>
+        </div>
+        <div class="field campo-avaliacao">
           <label>Avaliação</label>
           <div class="avaliacao-controles">
             <label class="radio-opcao">
@@ -56,10 +60,6 @@
             <span id="status-nota" class="badge b-cinza">—</span>
           </div>
         </div>
-        <div class="field campo-observacoes">
-          <label>Observações</label>
-          <textarea name="observacoes" rows="3">{{ matricula.observacoes or '' }}</textarea>
-        </div>
       </div>
     </div>
   </div>
@@ -76,24 +76,32 @@
     var selNota = document.getElementById('campo-nota');
     var status = document.getElementById('status-nota');
 
+    function ajustarNota() {
+      var opcao = selNota.options[selNota.selectedIndex];
+      var texto = opcao ? opcao.text : '';
+      selNota.style.width = (texto.length + 4) + 'ch';
+    }
+
     function atualizar() {
       var prova = document.querySelector('input[name="tipo_avaliacao"]:checked').value === 'prova';
       selNota.disabled = !prova;
+      ajustarNota();
       var valor = parseInt(selNota.value, 10);
       if (!prova || isNaN(valor)) {
         status.className = 'badge b-cinza';
         status.textContent = '—';
       } else if (valor < 7) {
-        status.className = 'badge b-roxo';
+        status.className = 'badge b-vermelho-escuro';
         status.textContent = 'Reprovado';
       } else {
-        status.className = 'badge b-verde';
+        status.className = 'badge b-verde-escuro';
         status.textContent = 'Aprovado';
       }
     }
 
     radios.forEach(function (r) { r.addEventListener('change', atualizar); });
     selNota.addEventListener('change', atualizar);
+    window.addEventListener('load', ajustarNota);
     atualizar();
   })();
 </script>
