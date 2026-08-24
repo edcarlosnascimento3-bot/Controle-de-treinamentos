@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/js/chart.umd.min.js"></script>
+</head>
+<body>
+{% if user %}
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">{{ app_name }}<br><span style="font-weight:400;font-size:12px;opacity:.7">v{{ app_version }}</span></div>
+    <nav>
+      {% for item in menu_itens %}
+      {% set ativo = (request.url.path == item.url if item.exato else (request.url.path.startswith(item.prefixo) and not (item.excecao and request.url.path.startswith(item.excecao)))) %}
+      <a href="{{ item.url }}" class="nav-link {% if ativo %}ativo{% endif %}">{{ item.rotulo }}</a>
+      {% endfor %}
+    </nav>
+    <div class="sidebar-footer">
+      <img src="/static/img/logo_schreiber.png" alt="Logo Schreiber">
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div>{{ user.nome }} <span class="muted">· {{ user.role_label }}</span></div>
+      <form method="post" action="/auth/logout">
+        <button class="btn btn-ghost btn-sm" type="submit">Sair</button>
+      </form>
+    </header>
+    <div class="content">
+      {% if ok %}<div class="alert alert-ok">{{ ok }}</div>{% endif %}
+      {% if erro %}<div class="alert alert-erro">{{ erro }}</div>{% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% else %}
+  {% block content_public %}{% endblock %}
+{% endif %}
+<script src="/static/js/app.js"></script>
+</body>
+</html>

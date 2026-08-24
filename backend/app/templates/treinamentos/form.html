@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar treinamento' if treinamento else 'Novo treinamento' }} · {{ app_name }}{% endblock %}
+{% block content %}
+
+<h1>{{ 'Editar treinamento' if treinamento else 'Novo treinamento' }}</h1>
+<p class="muted mb">Cadastre os treinamentos oferecidos pela empresa e sua validade.</p>
+
+<form method="post" action="{{ '/treinamentos/' ~ treinamento.id ~ '/editar' if treinamento else '/treinamentos' }}">
+  <div class="card">
+    <h2>Informações</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Nome *</label>
+        <input type="text" name="nome" required value="{{ treinamento.nome if treinamento else '' }}">
+      </div>
+      <div class="field">
+        <label>Categoria</label>
+        <select name="categoria">
+          {% for c in categorias %}
+          <option value="{{ c.nome }}" {% if (treinamento and treinamento.categoria == c.nome) or (not treinamento and c.nome == 'CORPORATIVO') %}selected{% endif %}>{{ c.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Norma (ex.: NR-12)</label>
+        <input type="text" name="norma" value="{{ treinamento.norma or '' }}" placeholder="NR-12">
+      </div>
+      <div class="field">
+        <label>Carga horária (horas)</label>
+        <input type="number" step="0.5" name="carga_horaria" value="{{ '%g' % treinamento.carga_horaria if treinamento and treinamento.carga_horaria else '' }}">
+      </div>
+      <div class="field">
+        <label>Validade (meses)</label>
+        <input type="number" name="validade_meses" value="{{ treinamento.validade_meses if treinamento and treinamento.validade_meses else '' }}">
+        <span class="ajuda">Deixe vazio se o treinamento não expira (ex.: corporativo).</span>
+      </div>
+      <div class="field">
+        <label>Descrição</label>
+        <textarea name="descricao" rows="3">{{ treinamento.descricao or '' }}</textarea>
+      </div>
+      <div class="field checkbox">
+        <input type="checkbox" name="ativo" id="ativo" {% if not treinamento or treinamento.ativo %}checked{% endif %}>
+        <label for="ativo">Treinamento ativo</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex gap">
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a class="btn btn-secondary" href="{{ '/treinamentos/' ~ treinamento.id if treinamento else '/treinamentos' }}">Cancelar</a>
+  </div>
+</form>
+
+{% endblock %}

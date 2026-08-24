@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Registro · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div>
+    <h1>{{ matricula.treinamento.nome }}</h1>
+    <p class="muted">
+      <a href="/funcionarios/{{ matricula.funcionario.id }}">{{ matricula.funcionario.nome }}</a> ·
+      {% if matricula.treinamento.categoria == 'NR' %}<span class="badge b-azul">NR</span>
+      {% else %}<span class="badge b-cinza">{{ matricula.treinamento.categoria_label }}</span>{% endif %}
+    </p>
+  </div>
+  <div class="flex gap">
+    {% if pode_editar %}
+    <a class="btn btn-secondary" href="/matriculas/{{ matricula.id }}/editar">Editar</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Detalhes</h2>
+  <div class="form-grid">
+    <div><strong>Funcionário:</strong> {{ matricula.funcionario.nome }}</div>
+    <div><strong>Treinamento:</strong> {{ matricula.treinamento.nome }}{% if matricula.treinamento.norma %} ({{ matricula.treinamento.norma }}){% endif %}</div>
+    <div><strong>Realização:</strong> {{ matricula.data_realizacao.strftime('%d/%m/%Y') if matricula.data_realizacao else '—' }}</div>
+    <div><strong>Vencimento:</strong> {{ matricula.data_validade.strftime('%d/%m/%Y') if matricula.data_validade else 'Não expira' }}</div>
+    <div>
+      <strong>Situação:</strong>
+      {% if situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+      {% elif situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer ({{ dias }} dias)</span>
+      {% elif situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+      {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+    </div>
+    <div><strong>Instrutor:</strong> {{ matricula.instrutor or '—' }}</div>
+    <div><strong>Aprovado:</strong> {{ 'Sim' if matricula.aprovado else 'Não' }}</div>
+  </div>
+  {% if matricula.observacoes %}
+  <p class="mt"><strong>Observações:</strong> {{ matricula.observacoes }}</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Certificado</h2>
+  {% if matricula.certificado %}
+    <p>
+      <strong>Número:</strong> {{ matricula.certificado.numero or '—' }} ·
+      <strong>Emissão:</strong> {{ matricula.certificado.data_emissao.strftime('%d/%m/%Y') }}
+    </p>
+    {% if matricula.certificado.arquivo_nome %}
+      <a class="btn btn-acento" href="/matriculas/{{ matricula.id }}/certificado/download">Baixar certificado</a>
+    {% else %}
+      <p class="muted">Registro de certificado sem arquivo anexado.</p>
+    {% endif %}
+    {% if pode_editar %}
+    <form method="post" action="/matriculas/{{ matricula.id }}/certificado/remover" class="mt" onsubmit="return confirm('Remover o certificado deste registro?');">
+      <button class="btn btn-ghost btn-sm" type="submit">Remover certificado</button>
+    </form>
+    {% endif %}
+  {% endif %}
+
+  {% if pode_editar %}
+  <form method="post" action="/matriculas/{{ matricula.id }}/certificado" enctype="multipart/form-data" class="mt">
+    <div class="form-grid">
+      <div class="field">
+        <label>Número do certificado</label>
+        <input type="text" name="numero" value="{{ matricula.certificado.numero if matricula.certificado else '' }}">
+      </div>
+      <div class="field">
+        <label>Data de emissão</label>
+        <input type="date" name="data_emissao" value="{{ matricula.certificado.data_emissao.isoformat() if matricula.certificado and matricula.certificado.data_emissao else '' }}">
+      </div>
+      <div class="field">
+        <label>Arquivo (PDF)</label>
+        <input type="file" name="arquivo" accept=".pdf,.png,.jpg,.jpeg">
+      </div>
+    </div>
+    <button class="btn btn-primary mt" type="submit">{{ 'Atualizar' if matricula.certificado else 'Salvar certificado' }}</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if pode_editar %}
+<div class="card">
+  <h2>Zona de perigo</h2>
+  <form method="post" action="/matriculas/{{ matricula.id }}/excluir" onsubmit="return confirm('Excluir este registro?');">
+    <button class="btn btn-danger btn-sm" type="submit">Excluir registro</button>
+  </form>
+</div>
+{% endif %}
+
+{% endblock %}

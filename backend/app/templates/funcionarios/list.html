@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Funcionários · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div>
+    <h1>Funcionários</h1>
+    <p class="muted">{{ funcionarios|length }} registros ativos</p>
+  </div>
+  {% if pode_editar %}
+  <a class="btn btn-primary" href="/funcionarios/novo">+ Novo funcionário</a>
+  {% endif %}
+</div>
+
+<form method="get" action="/funcionarios" class="filtros">
+  <select name="nome">
+    <option value="">Todos os funcionários</option>
+    {% for n in nomes %}
+    <option value="{{ n }}" {% if nome == n %}selected{% endif %}>{{ n }}</option>
+    {% endfor %}
+  </select>
+  <select name="setor_id">
+    <option value="">Todos os setores</option>
+    {% for s in setores %}
+    <option value="{{ s.id }}" {% if setor_id == s.id %}selected{% endif %}>{{ s.nome }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-secondary" type="submit">Filtrar</button>
+</form>
+
+<div class="card">
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th>Nome</th><th>Matrícula</th><th>Setor</th><th>Cargo</th><th>Admissão</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in funcionarios %}
+      <tr>
+        <td><a href="/funcionarios/{{ f.id }}">{{ f.nome }}</a></td>
+        <td>{{ f.matricula or '—' }}</td>
+        <td>{{ f.setor.nome if f.setor else '—' }}</td>
+        <td>{{ f.cargo.nome if f.cargo else '—' }}</td>
+        <td>{{ f.data_admissao.strftime('%d/%m/%Y') if f.data_admissao else '—' }}</td>
+        <td>
+          <a class="btn btn-sm btn-secondary" href="/funcionarios/{{ f.id }}">Ver</a>
+          {% if pode_editar %}
+          <a class="btn btn-sm btn-secondary" href="/funcionarios/{{ f.id }}/editar">Editar</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">Nenhum funcionário encontrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

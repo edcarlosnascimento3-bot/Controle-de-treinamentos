@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar funcionário' if funcionario else 'Novo funcionário' }} · {{ app_name }}{% endblock %}
+{% block content %}
+
+<h1>{{ 'Editar funcionário' if funcionario else 'Novo funcionário' }}</h1>
+<p class="muted mb">Cadastro completo: admissão, setor, cargo e vínculo com o sistema.</p>
+
+<form method="post" enctype="multipart/form-data" action="{{ '/funcionarios/' ~ funcionario.id ~ '/editar' if funcionario else '/funcionarios' }}">
+  <div class="card">
+    <h2>Dados pessoais</h2>
+    <div class="form-grid">
+      <div class="field avatar-campo" style="grid-column:1/-1">
+        <div class="avatar-upload">
+          <div class="avatar">
+            {% if funcionario and funcionario.foto %}
+            <img id="avatar-img" src="/funcionarios/{{ funcionario.id }}/foto" alt="Foto de {{ funcionario.nome }}">
+            {% else %}
+            <span id="avatar-iniciais">{{ (funcionario.nome or '?')[:1]|upper }}</span>
+            {% endif %}
+          </div>
+          <label class="btn btn-sm btn-secondary" for="foto">Enviar foto</label>
+          <input type="file" name="foto" id="foto" accept="image/*" class="oculto">
+          <span class="ajuda">JPG, PNG ou WEBP · máx. 10 MB</span>
+        </div>
+        <div class="field">
+          <label>Nome completo *</label>
+          <input type="text" name="nome" required value="{{ funcionario.nome if funcionario else '' }}">
+        </div>
+      </div>
+      <div class="field">
+        <label>CPF</label>
+        <input type="text" name="cpf" value="{{ funcionario.cpf or '' }}">
+      </div>
+      <div class="field">
+        <label>Matrícula</label>
+        <input type="text" name="matricula" value="{{ funcionario.matricula or '' }}">
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" name="email" value="{{ funcionario.email or '' }}">
+      </div>
+      <div class="field">
+        <label>Telefone</label>
+        <input type="text" name="telefone" value="{{ funcionario.telefone or '' }}">
+      </div>
+      <div class="field">
+        <label>Data de admissão</label>
+        <input type="date" name="data_admissao" value="{{ funcionario.admissao_str }}">
+      </div>
+      <div class="field">
+        <label>Data de demissão</label>
+        <input type="date" name="data_demissao" value="{{ funcionario.data_demissao.isoformat() if funcionario and funcionario.data_demissao else '' }}">
+      </div>
+      <div class="field">
+        <label>Turno</label>
+        <select name="turno">
+          <option value="">— Selecione —</option>
+          {% for t in ['ADM', '1º TURNO', '2º TURNO', '3º TURNO'] %}
+          <option value="{{ t }}" {% if funcionario and funcionario.turno == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Unidade</label>
+        <select name="unidade">
+          <option value="">— Selecione —</option>
+          {% for u in ['PFZ - PORTO FELIZ', 'RAZ - RIO AZUL'] %}
+          <option value="{{ u }}" {% if funcionario and funcionario.unidade == u %}selected{% endif %}>{{ u }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Setor e cargo</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Setor</label>
+        <select name="setor_id">
+          <option value="">— Selecione —</option>
+          {% for s in setores %}
+          <option value="{{ s.id }}" {% if funcionario and funcionario.setor_id == s.id %}selected{% endif %}>{{ s.nome }}</option>
+          {% endfor %}
+        </select>
+        <span class="ajuda">ou informe um novo:</span>
+        <input type="text" name="novo_setor" placeholder="Novo setor..." style="margin-top:6px">
+      </div>
+      <div class="field">
+        <label>Cargo</label>
+        <select name="cargo_id">
+          <option value="">— Selecione —</option>
+          {% for c in cargos %}
+          <option value="{{ c.id }}" {% if funcionario and funcionario.cargo_id == c.id %}selected{% endif %}>{{ c.nome }}</option>
+          {% endfor %}
+        </select>
+        <span class="ajuda">ou informe um novo:</span>
+        <input type="text" name="novo_cargo" placeholder="Novo cargo..." style="margin-top:6px">
+      </div>
+    </div>
+  </div>
+
+  <div class="flex gap">
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a class="btn btn-secondary" href="{{ '/funcionarios/' ~ funcionario.id if funcionario else '/funcionarios' }}">Cancelar</a>
+  </div>
+</form>
+
+{% if funcionario %}
+<div class="card">
+  <h2>Situação do cadastro</h2>
+  {% if funcionario.ativo %}
+  <p class="muted mb">Inativar remove este funcionário do cadastro ativo: ele deixa de aparecer nas seleções de registros/treinamentos e passa a ficar listado na página <a href="/funcionarios/inativos">Inativos</a>. O histórico de treinamentos é preservado.</p>
+  <form method="post" action="/funcionarios/{{ funcionario.id }}/inativar" data-confirmar="Inativar {{ funcionario.nome }}? Ele será movido para a página Inativos." data-perigo>
+    <button class="btn btn-danger btn-sm" type="submit">Inativar funcionário</button>
+  </form>
+  {% else %}
+  <p class="muted mb">Este funcionário está inativo. Reative para que volte ao cadastro ativo.</p>
+  <form method="post" action="/funcionarios/{{ funcionario.id }}/reativar" data-confirmar="Reativar {{ funcionario.nome }}? Ele volta ao cadastro ativo e às seleções.">
+    <button class="btn btn-primary btn-sm" type="submit">Reativar funcionário</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+
+<script>
+document.getElementById('foto').addEventListener('change', function (e) {
+  var arquivo = e.target.files && e.target.files[0];
+  if (!arquivo) return;
+  var leitor = new FileReader();
+  leitor.onload = function (ev) {
+    var img = document.getElementById('avatar-img');
+    if (!img) {
+      img = document.createElement('img');
+      img.id = 'avatar-img';
+      var circ = document.querySelector('.avatar');
+      circ.innerHTML = '';
+      circ.appendChild(img);
+    }
+    img.src = ev.target.result;
+  };
+  leitor.readAsDataURL(arquivo);
+});
+</script>
+
+{% endblock %}

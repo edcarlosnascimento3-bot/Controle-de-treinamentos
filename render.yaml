@@ -1,0 +1,35 @@
+# Blueprint de deploy no Render
+# Docs: https://render.com/docs/blueprint-spec
+#
+# No painel do Render: New + -> Blueprint -> selecione este repositório.
+# As variáveis marcadas com "sync: false" são pedidas na hora do deploy
+# (nunca ficam salvas neste arquivo).
+
+services:
+  - type: web
+    name: controle-treinamentos
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python -m alembic upgrade head
+    startCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /auth/login
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.7
+
+      # Conexão com o banco PostgreSQL do Supabase (session pooler)
+      - key: DATABASE_URL
+        sync: false
+
+      # Segredo dos tokens JWT — gerado automaticamente pelo Render
+      - key: SECRET_KEY
+        generateValue: true
+
+      # Senha do administrador inicial (criado na primeira execução)
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      # Site publicado com HTTPS
+      - key: COOKIE_SECURE
+        value: "true"

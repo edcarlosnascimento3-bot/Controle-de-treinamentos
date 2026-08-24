@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Cartão · {{ funcionario.nome }} · {{ app_name }}{% endblock %}
+{% block content_public %}
+<div class="pagina-cartao">
+  <div class="cartao-impressao">
+    <div class="flex between mb no-print">
+      <h1>Cartão de treinamentos</h1>
+      <div class="flex gap">
+        <button class="btn btn-secondary" type="button" data-compartilhar="{{ url_cartao }}" data-titulo="Cartão de treinamentos de {{ funcionario.nome }}">Compartilhar</button>
+        <button class="btn btn-primary" type="button" onclick="window.print()">Imprimir</button>
+      </div>
+    </div>
+
+    <div class="cartao-topo">
+      <div class="flex gap">
+        <div class="avatar">
+          {% if funcionario.foto %}
+          <img src="{{ url_foto }}" alt="Foto de {{ funcionario.nome }}">
+          {% else %}
+          <span>{{ (funcionario.nome or '?')[:1]|upper }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <h1>{{ funcionario.nome }}</h1>
+          <p class="muted">
+            {{ funcionario.cargo.nome if funcionario.cargo else 'Sem cargo' }} ·
+            {{ funcionario.setor.nome if funcionario.setor else 'Sem setor' }}
+            {% if funcionario.matricula %} · Matrícula {{ funcionario.matricula }}{% endif %}
+            {% if funcionario.unidade %} · {{ funcionario.unidade }}{% endif %}
+            {% if funcionario.turno %} · Turno {{ funcionario.turno }}{% endif %}
+            {% if funcionario.ativo %}<span class="badge b-verde">Ativo</span>
+            {% else %}<span class="badge b-cinza">Inativo</span>{% endif %}
+          </p>
+        </div>
+      </div>
+      <div class="qr-grande">
+        <img src="{{ url_qr }}" alt="QR Code do cartão de treinamentos de {{ funcionario.nome }}">
+      </div>
+    </div>
+
+    <p class="ajuda no-print">Aponte a câmera do celular para o QR Code acima (ou escaneie a versão impressa) para abrir este cartão.</p>
+
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Treinamento</th><th>Norma</th><th>Realização</th><th>Vencimento</th><th>Situação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in matriculas %}
+        <tr>
+          <td>{{ m.treinamento.nome }}</td>
+          <td>{{ m.treinamento.norma or '—' }}</td>
+          <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+          <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+          <td>
+            {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+            {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
+            {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+            {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
+            {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">Nenhum treinamento registrado para este funcionário.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p class="ajuda">Documento gerado por {{ app_name }} em {{ hoje }}.</p>
+  </div>
+</div>
+{% endblock %}

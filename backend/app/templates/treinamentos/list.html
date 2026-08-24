@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Treinamentos · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div>
+    <h1>Treinamentos</h1>
+    <p class="muted">{{ treinamentos|length }} cadastrados</p>
+  </div>
+  {% if pode_editar %}
+  <a class="btn btn-primary" href="/treinamentos/novo">+ Novo treinamento</a>
+  {% endif %}
+</div>
+
+<form method="get" action="/treinamentos" class="filtros">
+  <input class="busca" type="text" name="busca" value="{{ busca }}" placeholder="Buscar por nome ou norma">
+  <select name="categoria">
+    <option value="">Todas as categorias</option>
+    {% for c in categorias %}
+    <option value="{{ c.nome }}" {% if categoria == c.nome %}selected{% endif %}>{{ c.nome }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-secondary" type="submit">Filtrar</button>
+</form>
+
+<div class="card">
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th>Nome do Treinamento</th><th>Categoria</th><th>Norma</th><th class="centro">Carga horária</th><th class="centro">Validade</th><th class="centro">Registros</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in treinamentos %}
+      <tr>
+        <td><a href="/treinamentos/{{ t.id }}">{{ t.nome }}</a></td>
+        <td>
+          {% if t.categoria == 'NR' %}<span class="badge b-azul">NR</span>
+          {% else %}<span class="badge b-cinza">{{ t.categoria_label }}</span>{% endif %}
+        </td>
+        <td>{{ t.norma or '—' }}</td>
+        <td class="centro">{{ ('%g' % t.carga_horaria) + ' h' if t.carga_horaria else '—' }}</td>
+        <td class="centro">{{ t.validade_label }}</td>
+        <td class="centro">{{ t.matriculas|length }}</td>
+        <td>
+          <a class="btn btn-sm btn-secondary" href="/treinamentos/{{ t.id }}">Ver</a>
+          {% if pode_editar %}
+          <a class="btn btn-sm btn-secondary" href="/treinamentos/{{ t.id }}/editar">Editar</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="muted">Nenhum treinamento encontrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

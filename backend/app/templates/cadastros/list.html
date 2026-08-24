@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div>
+    <h1>{{ titulo }}</h1>
+    <p class="muted">{{ itens|length }} cadastrados</p>
+  </div>
+  {% if pode_editar %}
+  <a class="btn btn-primary" href="{{ url_base }}/novo">+ Novo {{ singular|lower }}</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th>Nome</th><th class="centro">Em uso</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in itens %}
+      <tr>
+        <td>{{ item.nome }}</td>
+        <td class="centro">{{ usos.get(item.id, 0) }}</td>
+        <td class="direita">
+          {% if pode_editar %}
+          <a class="btn btn-sm btn-secondary" href="{{ url_base }}/{{ item.id }}/editar">Editar</a>
+          <form method="post" action="{{ url_base }}/{{ item.id }}/excluir" class="oculto" id="exc-{{ item.id }}"></form>
+          <button class="btn btn-sm btn-danger" onclick="if(confirm('Excluir {{ singular|lower }}?')) document.getElementById('exc-{{ item.id }}').submit();">Excluir</button>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" class="muted">Nenhum {{ singular|lower }} cadastrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

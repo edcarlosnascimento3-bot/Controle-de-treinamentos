@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Erro {{ codigo }} · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagina-erro">
+  <p class="codigo">{{ codigo }}</p>
+  <p class="muted">{{ mensagem }}</p>
+  <a class="btn btn-primary" href="/">Voltar ao início</a>
+</div>
+{% endblock %}

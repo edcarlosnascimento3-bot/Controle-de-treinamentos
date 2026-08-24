@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Banco de dados local e uploads (nunca versionar)
+data/
+
+# Ambiente / segredos
+.env
+
+# IDE / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs e notas internas de desenvolvimento
+logs/
+Conversas.md

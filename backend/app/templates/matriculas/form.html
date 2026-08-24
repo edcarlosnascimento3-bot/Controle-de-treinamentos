@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar registro' if matricula else 'Registrar treinamento' }} · {{ app_name }}{% endblock %}
+{% block content %}
+
+<h1>{{ 'Editar registro' if matricula else 'Registrar treinamento' }}</h1>
+<p class="muted mb">Vincule um funcionário a um treinamento já realizado. A validade é calculada automaticamente.</p>
+
+<form method="post" action="{{ '/matriculas/' ~ matricula.id ~ '/editar' if matricula else '/matriculas' }}">
+  <div class="card">
+    <h2>Dados da realização</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Funcionário *</label>
+        <select name="funcionario_id" required>
+          <option value="">— Selecione —</option>
+          {% for f in funcionarios %}
+          <option value="{{ f.id }}" {% if funcionario_id == f.id %}selected{% endif %}>{{ f.nome }}{% if f.matricula %} ({{ f.matricula }}){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Treinamento *</label>
+        <select name="treinamento_id" required>
+          <option value="">— Selecione —</option>
+          {% for t in treinamentos %}
+          <option value="{{ t.id }}" {% if treinamento_id == t.id %}selected{% endif %}>{{ t.nome }}{% if t.norma %} ({{ t.norma }}){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Data de realização</label>
+        <input type="date" name="data_realizacao" value="{{ matricula.data_realizacao.isoformat() if matricula and matricula.data_realizacao else '' }}">
+      </div>
+      <div class="field">
+        <label>Instrutor</label>
+        <input type="text" name="instrutor" value="{{ matricula.instrutor or '' }}">
+      </div>
+      <div class="field checkbox">
+        <input type="checkbox" name="aprovado" id="aprovado" {% if not matricula or matricula.aprovado %}checked{% endif %}>
+        <label for="aprovado">Aprovado</label>
+      </div>
+      <div class="field">
+        <label>Observações</label>
+        <textarea name="observacoes" rows="3">{{ matricula.observacoes or '' }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex gap">
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a class="btn btn-secondary" href="{{ '/matriculas/' ~ matricula.id if matricula else '/matriculas' }}">Cancelar</a>
+  </div>
+</form>
+
+{% endblock %}

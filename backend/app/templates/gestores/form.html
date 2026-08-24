@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar gestor' if gestor else 'Novo gestor' }} · {{ app_name }}{% endblock %}
+{% block content %}
+
+<h1>{{ 'Editar gestor' if gestor else 'Novo gestor' }}</h1>
+<p class="muted mb">Cadastro do gestor: nome, cargo e foto.</p>
+
+<form method="post" enctype="multipart/form-data" action="{{ '/gestores/' ~ gestor.id ~ '/editar' if gestor else '/gestores' }}">
+  <div class="card">
+    <div class="form-grid">
+      <div class="field avatar-campo" style="grid-column:1/-1">
+        <div class="avatar-upload">
+          <div class="avatar">
+            {% if gestor and gestor.foto %}
+            <img id="avatar-img" src="/gestores/{{ gestor.id }}/foto" alt="Foto de {{ gestor.nome }}">
+            {% else %}
+            <span id="avatar-iniciais">{{ (gestor.nome or '?')[:1]|upper }}</span>
+            {% endif %}
+          </div>
+          <label class="btn btn-sm btn-secondary" for="foto">Enviar foto</label>
+          <input type="file" name="foto" id="foto" accept="image/*" class="oculto">
+          <span class="ajuda">JPG, PNG ou WEBP · máx. 10 MB</span>
+        </div>
+        <div class="field">
+          <label>Nome *</label>
+          <input type="text" name="nome" required value="{{ gestor.nome if gestor else '' }}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Cargo</label>
+        <select name="cargo_id">
+          <option value="">— Selecione —</option>
+          {% for c in cargos %}
+          <option value="{{ c.id }}" {% if gestor and gestor.cargo_id == c.id %}selected{% endif %}>{{ c.nome }}</option>
+          {% endfor %}
+        </select>
+        <span class="ajuda">ou informe um novo:</span>
+        <input type="text" name="novo_cargo" placeholder="Novo cargo..." style="margin-top:6px">
+      </div>
+    </div>
+  </div>
+
+  <div class="flex gap">
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a class="btn btn-secondary" href="/gestores">Cancelar</a>
+  </div>
+</form>
+
+<script>
+document.getElementById('foto').addEventListener('change', function (e) {
+  var arquivo = e.target.files && e.target.files[0];
+  if (!arquivo) return;
+  var leitor = new FileReader();
+  leitor.onload = function (ev) {
+    var img = document.getElementById('avatar-img');
+    if (!img) {
+      img = document.createElement('img');
+      img.id = 'avatar-img';
+      var circ = document.querySelector('.avatar');
+      circ.innerHTML = '';
+      circ.appendChild(img);
+    }
+    img.src = ev.target.result;
+  };
+  leitor.readAsDataURL(arquivo);
+});
+</script>
+
+{% endblock %}

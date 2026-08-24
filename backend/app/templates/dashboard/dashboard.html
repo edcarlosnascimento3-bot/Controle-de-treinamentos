@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Painel · {{ app_name }}{% endblock %}
+{% block content %}
+
+<h1>Painel de Controle</h1>
+<p class="muted mb">{{ hoje.strftime('%d/%m/%Y') }}</p>
+
+{% if funcao == 'colaborador' and sem_vinculo %}
+  <div class="alert alert-erro">Seu usuário ainda não está vinculado a um funcionário. Fale com o RH.</div>
+{% endif %}
+
+{% if funcao in ('admin', 'rh') %}
+  <div class="grid-stats">
+    <div class="stat"><div class="num">{{ total_funcionarios }}</div><div class="rotulo">Funcionários ativos</div></div>
+    <div class="stat"><div class="num">{{ nr_ativos }}</div><div class="rotulo">Treinamentos NR ativos</div></div>
+    <div class="stat"><div class="num">{{ total_treinamentos }}</div><div class="rotulo">Treinamentos ativos</div></div>
+    <div class="stat"><div class="num">{{ total_matriculas }}</div><div class="rotulo">Registros realizados</div></div>
+    <div class="stat"><div class="num">{{ qtd_validos }}</div><div class="rotulo">Válidos</div></div>
+    <div class="stat destaque-amarelo"><div class="num">{{ qtd_a_vencer }}</div><div class="rotulo">A vencer</div></div>
+    <div class="stat destaque-vermelho"><div class="num">{{ qtd_vencidos }}</div><div class="rotulo">Vencidos ou Não realizado</div></div>
+  </div>
+{% endif %}
+
+{% if funcao == 'gestor' %}
+  <div class="grid-stats">
+    <div class="stat"><div class="num">{{ total_funcionarios }}</div><div class="rotulo">Funcionários ativos</div></div>
+    <div class="stat destaque-amarelo"><div class="num">{{ qtd_a_vencer }}</div><div class="rotulo">A vencer</div></div>
+    <div class="stat destaque-vermelho"><div class="num">{{ qtd_vencidos }}</div><div class="rotulo">Vencidos ou Não realizado</div></div>
+  </div>
+{% endif %}
+
+{% if funcao == 'colaborador' %}
+  <div class="card">
+    <h2>Meus treinamentos</h2>
+    {% if matriculas %}
+      <table class="tabela">
+        <thead>
+          <tr><th>Treinamento</th><th>Norma</th><th>Realização</th><th>Vencimento</th><th>Situação</th></tr>
+        </thead>
+        <tbody>
+          {% for m in matriculas %}
+          <tr>
+            <td>{{ m.treinamento.nome }}</td>
+            <td>{{ m.treinamento.norma or '—' }}</td>
+            <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+            <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+            <td>
+              {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+              {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
+              {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+              {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
+              {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Nenhum treinamento registrado.</p>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if funcao != 'colaborador' %}
+  <div class="grid-stats grid-filtro">
+    <div class="card card-filtro">
+      <h2>Consultar colaborador</h2>
+      <form method="get" action="/">
+        <select name="funcionario_id" class="busca-colaborador" onchange="if (this.value) { this.form.submit(); } else { window.location.href = '/'; }">
+          <option value="">— Selecione —</option>
+          {% for f in funcionarios %}
+          <option value="{{ f.id }}" {% if sel_funcionario and sel_funcionario.id == f.id %}selected{% endif %}>{{ f.nome }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      <div class="filtro-acoes">
+        <a class="btn btn-secondary btn-sm" href="/">Limpar filtro</a>
+      </div>
+    </div>
+    {% if not sel_funcionario %}
+    <div class="card">
+      <h2>Vencidos ou Não realizado <span class="badge b-vermelho">{{ qtd_vencidos }}</span></h2>
+      {% if vencidos %}
+        <table class="tabela">
+          <thead><tr><th>Funcionário</th><th>Treinamento</th><th>Venceu em</th></tr></thead>
+          <tbody>
+            {% for m in vencidos %}
+            <tr>
+              <td><a href="/funcionarios/{{ m.funcionario.id }}">{{ m.funcionario.nome }}</a></td>
+              <td>{{ m.treinamento.nome }}</td>
+              <td>{% if m.treinamento.integracao %}{% if m.data_realizacao %}<span class="badge b-verde">Realizado</span>{% else %}<span class="badge b-amarelo">Não realizado</span>{% endif %}{% elif m.data_validade %}<span class="badge b-vermelho">{{ m.data_validade.strftime('%d/%m/%Y') }}</span>{% else %}<span class="badge b-cinza">Não realizado</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if qtd_vencidos > 15 %}<p class="muted mt">Mostrando 15 de {{ qtd_vencidos }}. Veja <a href="/relatorios">relatórios</a>.</p>{% endif %}
+      {% else %}
+        <p class="muted">Nenhum treinamento vencido ou pendente. Tudo em dia!</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if sel_funcionario %}
+  <div class="card">
+    <h2>{{ sel_funcionario.nome }} — treinamentos realizados</h2>
+    {% if sel_matriculas %}
+      <table class="tabela">
+        <thead>
+          <tr><th>Treinamento</th><th>Norma</th><th>Realização</th><th>Vencimento</th><th>Situação</th></tr>
+        </thead>
+        <tbody>
+          {% for m in sel_matriculas %}
+          <tr>
+            <td>{{ m.treinamento.nome }}</td>
+            <td>{{ m.treinamento.norma or '—' }}</td>
+            <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+            <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+            <td>
+              {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+              {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
+              {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+              {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
+              {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Nenhum treinamento registrado para este colaborador.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

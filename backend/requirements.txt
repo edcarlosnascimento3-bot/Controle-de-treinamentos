@@ -1,0 +1,26 @@
+# Core
+fastapi>=0.115
+uvicorn[standard]>=0.30
+
+# ORM / banco
+sqlalchemy>=2.0
+alembic>=1.13
+
+# PostgreSQL — necessário quando for publicar online.
+# A migração local -> online é só trocar a variável DATABASE_URL no .env
+psycopg[binary]>=3.1
+
+# Configuração / validação
+pydantic>=2.7
+pydantic-settings>=2.2
+python-multipart>=0.0.9
+
+# Segurança
+PyJWT>=2.8
+bcrypt>=4.1
+
+# Templates
+jinja2>=3.1
+
+# QR Code (SVG puro, sem dependências)
+segno>=1.6

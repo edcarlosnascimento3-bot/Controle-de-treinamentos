@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ funcionario.nome }} · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div class="flex gap">
+    <div class="avatar">
+      {% if funcionario.foto %}
+      <img src="/funcionarios/{{ funcionario.id }}/foto" alt="Foto de {{ funcionario.nome }}">
+      {% else %}
+      <span>{{ (funcionario.nome or '?')[:1]|upper }}</span>
+      {% endif %}
+    </div>
+    <div>
+      <h1>{{ funcionario.nome }}</h1>
+      <p class="muted">
+        {{ funcionario.cargo.nome if funcionario.cargo else 'Sem cargo' }} ·
+        {{ funcionario.setor.nome if funcionario.setor else 'Sem setor' }}
+        {% if funcionario.matricula %} · Matrícula {{ funcionario.matricula }}{% endif %}
+        {% if funcionario.ativo %}<span class="badge b-verde">Ativo</span>
+        {% else %}<span class="badge b-cinza">Inativo</span>{% endif %}
+      </p>
+    </div>
+  </div>
+  <div class="flex gap">
+    {% if pode_editar %}
+    <a class="btn btn-primary" href="/matriculas/nova?funcionario_id={{ funcionario.id }}">+ Registrar treinamento</a>
+    <a class="btn btn-secondary" href="/funcionarios/{{ funcionario.id }}/editar">Editar</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Dados</h2>
+  <div class="dados-layout">
+    <div class="dados-campos">
+      <div><strong>CPF:</strong> {{ funcionario.cpf or '—' }}</div>
+      <div><strong>E-mail:</strong> {{ funcionario.email or '—' }}</div>
+      <div><strong>Telefone:</strong> {{ funcionario.telefone or '—' }}</div>
+      <div><strong>Unidade:</strong> {{ funcionario.unidade or '—' }}</div>
+      <div><strong>Turno:</strong> {{ funcionario.turno or '—' }}</div>
+      <div><strong>Admissão:</strong> {{ funcionario.data_admissao.strftime('%d/%m/%Y') if funcionario.data_admissao else '—' }}</div>
+      <div><strong>Demissão:</strong> {{ funcionario.data_demissao.strftime('%d/%m/%Y') if funcionario.data_demissao else '—' }}</div>
+    </div>
+    <div class="qr-box">
+      <div>
+        <img src="{{ url_qr }}" alt="QR Code do cartão de treinamentos de {{ funcionario.nome }}" width="110" height="110">
+      </div>
+      <div class="qr-acoes">
+        <a class="btn btn-primary btn-sm" href="{{ url_cartao }}" target="_blank">Ver cartão</a>
+        <button class="btn btn-secondary btn-sm" type="button" data-copiar="{{ url_cartao }}">Compartilhar</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-imprimir-qr="{{ url_qr }}" data-nome="{{ funcionario.nome }}">Imprimir</button>
+      </div>
+      <span class="ajuda">Escaneie com a câmera do celular para abrir o cartão de treinamentos.</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Treinamentos realizados ({{ matriculas|length }})</h2>
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th>Treinamento</th><th>Norma</th><th>Realização</th><th>Vencimento</th><th>Situação</th><th>Certificado</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in matriculas %}
+      <tr>
+        <td><a href="/matriculas/{{ m.id }}">{{ m.treinamento.nome }}</a></td>
+        <td>{{ m.treinamento.norma or '—' }}</td>
+        <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+        <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+        <td>
+          {% if m.treinamento.integracao %}
+            {% if m.data_realizacao %}<span class="badge b-verde">Realizado</span>
+            {% else %}<span class="badge b-amarelo">Não realizado</span>{% endif %}
+          {% elif m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+          {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
+          {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+          {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
+          {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+        </td>
+        <td>{% if m.certificado and m.certificado.arquivo_nome %}<a href="/matriculas/{{ m.id }}/certificado/download">Download</a>{% else %}—{% endif %}</td>
+        <td><a class="btn btn-xs btn-secondary" href="/matriculas/{{ m.id }}">Ver</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="muted">Nenhum treinamento registrado para este funcionário.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pode_editar and not matriculas %}
+<div class="card">
+  <h2>Zona de perigo</h2>
+  <form method="post" action="/funcionarios/{{ funcionario.id }}/excluir" onsubmit="return confirm('Excluir definitivamente este funcionário?');">
+    <button class="btn btn-danger btn-sm" type="submit">Excluir funcionário</button>
+  </form>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Entrar · {{ app_name }}{% endblock %}
+{% block content_public %}
+<div class="pagina-login">
+  <div class="cartao-login">
+    <h1>{{ app_name }}</h1>
+    <div class="subtitulo">Acesse com seu usuário e senha.</div>
+    {% if erro %}<div class="alert alert-erro">{{ erro }}</div>{% endif %}
+    {% if aviso_tentativas %}<div class="alert alert-aviso">{{ aviso_tentativas }}</div>{% endif %}
+    <form method="post" action="/auth/login">
+      <div class="field">
+        <label>Usuário</label>
+        <input type="text" name="username" required autofocus autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Entrar</button>
+    </form>
+  </div>
+</div>
+
+{% if bloqueado %}
+<style>
+  .overlay-bloqueio{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
+  .caixa-bloqueio{background:#fff;border-radius:12px;max-width:380px;width:100%;padding:28px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .caixa-bloqueio h2{margin:0 0 12px;font-size:20px;color:#b91c1c}
+  .caixa-bloqueio p{margin:0 0 20px;color:#334155;line-height:1.5}
+  .caixa-bloqueio button{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:15px;cursor:pointer}
+  .caixa-bloqueio button:hover{background:#1d4ed8}
+</style>
+<div class="overlay-bloqueio" role="alertdialog" aria-modal="true" aria-labelledby="titulo-bloqueio">
+  <div class="caixa-bloqueio">
+    <h2 id="titulo-bloqueio">Tentativas excedidas</h2>
+    <p>
+      Você excedeu 5 tentativas de acesso.<br>
+      Tente novamente após {{ minutos or 5 }} minuto(s) ou procure o RH.
+    </p>
+    <button type="button" onclick="this.closest('.overlay-bloqueio').remove()">Entendi</button>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

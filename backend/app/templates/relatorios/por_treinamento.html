@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ treinamento.nome }} · Relatório · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div>
+    <h1>{{ treinamento.nome }}</h1>
+    <p class="muted">{{ treinamento.norma or 'Sem norma' }} · {{ treinamento.categoria_label }}</p>
+  </div>
+  <a class="btn btn-secondary" href="/relatorios">Voltar</a>
+</div>
+
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Funcionário</th><th>Matrícula</th><th>Setor</th><th>Realização</th><th>Vencimento</th><th>Situação</th></tr></thead>
+    <tbody>
+      {% for m in matriculas|sort(attribute='funcionario.nome') %}
+      <tr>
+        <td>{{ m.funcionario.nome }}</td>
+        <td>{{ m.funcionario.matricula or '—' }}</td>
+        <td>{{ m.funcionario.setor.nome if m.funcionario.setor else '—' }}</td>
+        <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+        <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+        <td>
+          {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+          {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
+          {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+          {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
+          {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">Ninguém realizou este treinamento ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

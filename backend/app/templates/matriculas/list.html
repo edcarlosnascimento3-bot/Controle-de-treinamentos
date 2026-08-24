@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Registros de treinamentos · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div>
+    <h1>Registros de treinamentos</h1>
+    <p class="muted">Realizações de treinamento por funcionário</p>
+  </div>
+  {% if pode_editar %}
+  <a class="btn btn-primary" href="/matriculas/nova">+ Registrar treinamento</a>
+  {% endif %}
+</div>
+
+<form method="get" action="/matriculas" class="filtros">
+  <input class="busca" type="text" name="busca" value="{{ busca }}" placeholder="Buscar por funcionário ou matrícula">
+  <select name="situacao">
+    <option value="todas" {% if not situacao or situacao == 'todas' %}selected{% endif %}>Todas as situações</option>
+    <option value="Válido" {% if situacao == 'Válido' %}selected{% endif %}>Válido</option>
+    <option value="A vencer" {% if situacao == 'A vencer' %}selected{% endif %}>A vencer</option>
+    <option value="Vencido" {% if situacao == 'Vencido' %}selected{% endif %}>Vencido</option>
+    <option value="Não realizado" {% if situacao == 'Não realizado' %}selected{% endif %}>Não realizado</option>
+    <option value="Sem validade" {% if situacao == 'Sem validade' %}selected{% endif %}>Sem validade</option>
+  </select>
+  <select name="categoria">
+    <option value="">Todas as categorias</option>
+    {% for c in categorias %}
+    <option value="{{ c.nome }}" {% if categoria == c.nome %}selected{% endif %}>{{ c.nome }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-secondary" type="submit">Filtrar</button>
+</form>
+
+<div class="card">
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th>Funcionário</th><th>Treinamento</th><th>Norma</th><th>Realização</th><th>Vencimento</th><th>Situação</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in matriculas %}
+      <tr>
+        <td><a href="/funcionarios/{{ m.funcionario.id }}">{{ m.funcionario.nome }}</a></td>
+        <td><a href="/treinamentos/{{ m.treinamento.id }}">{{ m.treinamento.nome }}</a></td>
+        <td>{{ m.treinamento.norma or '—' }}</td>
+        <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+        <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+        <td>
+          {% if m.treinamento.integracao %}
+            {% if m.data_realizacao %}<span class="badge b-verde">Realizado</span>
+            {% else %}<span class="badge b-amarelo">Não realizado</span>{% endif %}
+          {% elif m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+          {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
+          {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+          {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
+          {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+        </td>
+        <td>
+          <a class="btn btn-xs btn-secondary" href="/matriculas/{{ m.id }}">Ver</a>
+          {% if pode_editar %}
+          <a class="btn btn-xs btn-secondary" href="/matriculas/{{ m.id }}/editar">Editar</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="muted">Nenhum registro encontrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

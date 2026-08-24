@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Gestores · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div>
+    <h1>Gestores</h1>
+    <p class="muted">{{ gestores|length }} cadastrados</p>
+  </div>
+  {% if pode_editar %}
+  <a class="btn btn-primary" href="/gestores/novo">+ Novo gestor</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th></th><th>Nome</th><th>Cargo</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in gestores %}
+      <tr>
+        <td class="centro" style="width:56px">
+          <div class="avatar avatar-mini">
+            {% if g.foto %}
+            <img src="/gestores/{{ g.id }}/foto" alt="Foto de {{ g.nome }}">
+            {% else %}
+            <span>{{ (g.nome or '?')[:1]|upper }}</span>
+            {% endif %}
+          </div>
+        </td>
+        <td>{{ g.nome }}</td>
+        <td>{{ g.cargo.nome if g.cargo else '' }}</td>
+        <td class="direita">
+          {% if pode_editar %}
+          <a class="btn btn-sm btn-secondary" href="/gestores/{{ g.id }}/editar">Editar</a>
+          <form method="post" action="/gestores/{{ g.id }}/excluir" class="oculto" id="exc-{{ g.id }}"></form>
+          <button class="btn btn-sm btn-danger" onclick="if(confirm('Excluir gestor?')) document.getElementById('exc-{{ g.id }}').submit();">Excluir</button>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="muted">Nenhum gestor cadastrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

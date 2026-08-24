@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Relatórios · {{ app_name }}{% endblock %}
+{% block content %}
+
+<h1>Relatórios</h1>
+<p class="muted mb">Acompanhe a situação dos treinamentos e exporte em CSV (Excel).</p>
+
+<div class="grid-stats">
+  <div class="stat destaque-vermelho"><div class="num">{{ vencidos|length }}</div><div class="rotulo">Vencidos</div></div>
+  <div class="stat destaque-amarelo"><div class="num">{{ a_vencer|length }}</div><div class="rotulo">A vencer</div></div>
+</div>
+
+<div class="card">
+  <h2>Consultas rápidas</h2>
+  <div class="flex gap" style="align-items:flex-end">
+    <form method="get" action="/relatorios" class="filtros">
+      <div class="field">
+        <label>Por funcionário</label>
+        <select name="funcionario_id">
+          <option value="">— Selecione —</option>
+          {% for f in funcionarios %}
+          <option value="{{ f.id }}" {% if funcionario and funcionario.id == f.id %}selected{% endif %}>{{ f.nome }}{% if f.setor %} ({{ f.setor.nome }}){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn-secondary" type="submit">Consultar</button>
+    </form>
+    <form method="get" action="/relatorios" class="filtros">
+      <div class="field">
+        <label>Por treinamento</label>
+        <select name="treinamento_id">
+          <option value="">— Selecione —</option>
+          {% for t in treinamentos %}
+          <option value="{{ t.id }}" {% if treinamento and treinamento.id == t.id %}selected{% endif %}>{{ t.nome }}{% if t.norma %} ({{ t.norma }}){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn-secondary" type="submit">Consultar</button>
+    </form>
+  </div>
+</div>
+
+{% if funcionario and matriculas_func %}
+<div class="card">
+  <h2>{{ funcionario.nome }} — treinamentos</h2>
+  <div class="mb">
+    <a class="btn btn-secondary btn-sm" href="/relatorios/export/funcionario/{{ funcionario.id }}.csv">Exportar CSV</a>
+  </div>
+  <table class="tabela">
+    <thead><tr><th>Treinamento</th><th>Norma</th><th>Realização</th><th>Vencimento</th><th>Situação</th></tr></thead>
+    <tbody>
+      {% for m in matriculas_func %}
+      <tr>
+        <td>{{ m.treinamento.nome }}</td>
+        <td>{{ m.treinamento.norma or '—' }}</td>
+        <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+        <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+        <td>
+          {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+          {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
+          {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+          {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
+          {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if treinamento and matriculas_treino %}
+<div class="card">
+  <h2>{{ treinamento.nome }} — quem realizou</h2>
+  <table class="tabela">
+    <thead><tr><th>Funcionário</th><th>Matrícula</th><th>Realização</th><th>Vencimento</th><th>Situação</th></tr></thead>
+    <tbody>
+      {% for m in matriculas_treino %}
+      <tr>
+        <td><a href="/funcionarios/{{ m.funcionario.id }}">{{ m.funcionario.nome }}</a></td>
+        <td>{{ m.funcionario.matricula or '—' }}</td>
+        <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+        <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+        <td>
+          {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
+          {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
+          {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+          {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
+          {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Exportações gerais (CSV / Excel)</h2>
+  <div class="flex gap">
+    <a class="btn btn-secondary btn-sm" href="/relatorios/export/todos.csv">Todos os treinamentos</a>
+    <a class="btn btn-secondary btn-sm" href="/relatorios/export/vencidos.csv">Somente vencidos</a>
+    <a class="btn btn-secondary btn-sm" href="/relatorios/export/a-vencer.csv">Somente a vencer</a>
+  </div>
+</div>
+
+{% endblock %}

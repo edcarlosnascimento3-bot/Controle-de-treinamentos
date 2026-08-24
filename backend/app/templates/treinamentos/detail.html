@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ treinamento.nome }} · {{ app_name }}{% endblock %}
+{% block content %}
+
+<div class="flex between mb">
+  <div>
+    <h1>{{ treinamento.nome }}</h1>
+    <p class="muted">
+      {% if treinamento.categoria == 'NR' %}<span class="badge b-azul">NR</span>
+      {% else %}<span class="badge b-cinza">{{ treinamento.categoria_label }}</span>{% endif %}
+      {% if treinamento.norma %} · Norma {{ treinamento.norma }}{% endif %}
+      {% if treinamento.carga_horaria %} · {{ '%g' % treinamento.carga_horaria }} h{% endif %}
+      · Validade: {{ treinamento.validade_label }}
+    </p>
+  </div>
+  <div class="flex gap">
+    {% if pode_editar %}
+    <a class="btn btn-primary" href="/matriculas/nova?treinamento_id={{ treinamento.id }}">+ Registrar realização</a>
+    <a class="btn btn-secondary" href="/treinamentos/{{ treinamento.id }}/editar">Editar</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if treinamento.descricao %}
+<div class="card"><p class="descricao">{{ treinamento.descricao }}</p></div>
+{% endif %}
+
+<div class="card">
+  <h2>Realizações ({{ qtd_registros }})</h2>
+  <table class="tabela">
+    <thead>
+      <tr><th>Funcionário</th><th>Matrícula</th><th>Realização</th><th>Vencimento</th><th>Situação</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for m in registros|sort(attribute='funcionario.nome') %}
+      <tr>
+        <td><a href="/funcionarios/{{ m.funcionario.id }}">{{ m.funcionario.nome }}</a></td>
+        <td>{{ m.funcionario.matricula or '—' }}</td>
+        <td>{{ m.data_realizacao.strftime('%d/%m/%Y') if m.data_realizacao else '—' }}</td>
+        <td>{{ m.data_validade.strftime('%d/%m/%Y') if m.data_validade else 'Não expira' }}</td>
+        <td><a class="btn btn-xs btn-secondary" href="/matriculas/{{ m.id }}">Ver</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">Nenhuma realização registrada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pode_editar and not treinamento.matriculas %}
+<div class="card">
+  <form method="post" action="/treinamentos/{{ treinamento.id }}/excluir" onsubmit="return confirm('Excluir definitivamente este treinamento?');">
+    <button class="btn btn-danger btn-sm" type="submit">Excluir</button>
+  </form>
+</div>
+{% endif %}
+
+{% endblock %}
