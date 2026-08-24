@@ -3,7 +3,7 @@
 {% block content %}
 
 <h1>Usuários do sistema</h1>
-<p class="muted mb">Crie logins para acessar o sistema e defina, na edição de cada usuário, quais páginas ele pode visualizar.</p>
+<p class="muted mb">Crie logins para acessar o sistema. As páginas visíveis de cada usuário são definidas na edição do cadastro.</p>
 
 <div class="card">
   <table class="tabela">
@@ -39,66 +39,17 @@
       <div class="field"><label>Senha *</label><input type="password" name="senha" required></div>
       <div class="field">
         <label>Nível de acesso</label>
-        <select name="role" class="js-role-select">
+        <select name="role">
           {% for valor, rotulo in roles %}
           <option value="{{ valor }}" {% if valor == 'visualizador' %}selected{% endif %}>{{ rotulo }}</option>
           {% endfor %}
         </select>
-      </div>
-    </div>
-
-    <div class="permissoes-box mt">
-      <strong>Páginas visíveis</strong>
-      <p class="muted js-perm-nota" hidden>Administradores acessam todas as páginas automaticamente.</p>
-      <div class="permissoes-grid">
-        {% for p in paginas_form %}
-        <label class="perm-item">
-          <input type="checkbox" name="permissoes" value="{{ p.pagina.value }}" {% if p.pagina.value == 'matriculas' %}checked{% endif %}>
-          {{ pagina_labels[p.pagina.value] }}
-        </label>
-        {% endfor %}
+        <span class="ajuda">O usuário começa com as páginas padrão do perfil; ajuste em Editar se precisar.</span>
       </div>
     </div>
 
     <button class="btn btn-primary mt" type="submit">Criar usuário</button>
   </form>
 </div>
-
-<script>
-(function () {
-  var DEFAULTS = {
-    admin: null,
-    rh: ['painel','funcionarios','treinamentos','matriculas','relatorios','setores','cargos','gestores','categorias','kpis','inativos'],
-    gestor: ['painel','relatorios','setores','cargos','gestores','categorias','kpis'],
-    colaborador: ['painel'],
-    visualizador: ['matriculas']
-  };
-
-  var form = document.getElementById('form-novo-usuario');
-  var select = form.querySelector('.js-role-select');
-  var nota = form.querySelector('.js-perm-nota');
-  var boxes = form.querySelectorAll('input[name="permissoes"]');
-
-  function aplicarPadroes(role) {
-    var isAdmin = role === 'admin';
-    boxes.forEach(function (box) { box.disabled = isAdmin; });
-    if (nota) nota.hidden = !isAdmin;
-    if (!isAdmin) {
-      var defaults = DEFAULTS[role] || [];
-      boxes.forEach(function (box) {
-        box.checked = defaults.indexOf(box.value) !== -1;
-      });
-    }
-  }
-
-  if (!select) return;
-
-  // Estado inicial respeita o que está marcado no HTML (padrão do perfil).
-  // Os padrões só são reaplicados quando o nível de acesso muda.
-  select.addEventListener('change', function () {
-    aplicarPadroes(select.value);
-  });
-})();
-</script>
 
 {% endblock %}

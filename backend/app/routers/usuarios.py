@@ -7,7 +7,16 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..deps import require_roles
-from ..models import MENU_LATERAL, PAGINA_LABELS, PAGINA_SOMENTE_ADMIN, ROLE_LABELS, Pagina, Role, User
+from ..models import (
+    MENU_LATERAL,
+    PAGINA_LABELS,
+    PAGINA_SOMENTE_ADMIN,
+    PERMISSOES_PADRAO,
+    ROLE_LABELS,
+    Pagina,
+    Role,
+    User,
+)
 from ..security import hash_password
 from ..templating import render
 
@@ -34,6 +43,16 @@ def _normalizar_permissoes(role: Role, permissoes: list[str]) -> str:
         chaves = {p for p in permissoes if p in validas}
     # mantém a ordem do menu lateral
     ordenadas = [p.value for p in Pagina if p in chaves]
+    return ",".join(ordenadas)
+
+
+def _permissoes_iniciais(role: Role, permissoes: list[str]) -> str:
+    """Permissões de criação: usa as marcadas; sem marcação, aplica o padrão do perfil."""
+    normalizadas = _normalizar_permissoes(role, permissoes)
+    if normalizadas:
+        return normalizadas
+    padrao = set(PERMISSOES_PADRAO.get(role, []))
+    ordenadas = [p.value for p in Pagina if p in padrao]
     return ",".join(ordenadas)
 
 
@@ -124,7 +143,7 @@ def criar(
             email=_limpar(email),
             password_hash=hash_password(senha),
             role=novo_role,
-            permissoes=_normalizar_permissoes(novo_role, permissoes),
+            permissoes=_permissoes_iniciais(novo_role, permissoes),
             ativo=True,
         )
         db.add(u)
