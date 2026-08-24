@@ -19,6 +19,7 @@
   --vermelho: #dc2626;
   --vermelho-fundo: #fee2e2;
   --cinza-fundo: #e2e8f0;
+  --roxo-fundo: #4c1d95;
   --raio: 10px;
   --sombra: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -299,6 +300,7 @@ select.busca-colaborador:focus {
 .b-vermelho { background: var(--vermelho-fundo); color: var(--vermelho); }
 .b-cinza { background: var(--cinza-fundo); color: var(--cor-texto-suave); }
 .b-azul { background: #dbeafe; color: var(--cor-primaria); }
+.b-roxo { background: var(--roxo-fundo); color: #ffffff; font-weight: 700; }
 
 /* ---------------- alertas / flashes ---------------- */
 

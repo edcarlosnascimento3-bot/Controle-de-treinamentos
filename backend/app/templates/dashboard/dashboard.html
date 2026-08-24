@@ -48,6 +48,7 @@
               {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
               {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
               {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+              {% elif m._situacao == 'Reprovado' %}<span class="badge b-roxo">Reprovado</span>
               {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
               {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
             </td>
@@ -82,13 +83,13 @@
       <h2>Vencidos ou Não realizado <span class="badge b-vermelho">{{ qtd_vencidos }}</span></h2>
       {% if vencidos %}
         <table class="tabela">
-          <thead><tr><th>Funcionário</th><th>Treinamento</th><th>Venceu em</th></tr></thead>
+          <thead><tr><th>Funcionário</th><th>Treinamento</th><th>Status</th></tr></thead>
           <tbody>
             {% for m in vencidos %}
             <tr>
               <td><a href="/funcionarios/{{ m.funcionario.id }}">{{ m.funcionario.nome }}</a></td>
               <td>{{ m.treinamento.nome }}</td>
-              <td>{% if m.treinamento.integracao %}{% if m.data_realizacao %}<span class="badge b-verde">Realizado</span>{% else %}<span class="badge b-amarelo">Não realizado</span>{% endif %}{% elif m.data_validade %}<span class="badge b-vermelho">{{ m.data_validade.strftime('%d/%m/%Y') }}</span>{% else %}<span class="badge b-cinza">Não realizado</span>{% endif %}</td>
+              <td>{% if m._situacao == 'Reprovado' %}<span class="badge b-roxo">Reprovado</span>{% elif m.treinamento.integracao %}{% if m.data_realizacao %}<span class="badge b-verde">Realizado</span>{% else %}<span class="badge b-amarelo">Não realizado</span>{% endif %}{% elif m.data_validade %}<span class="badge b-vermelho">{{ m.data_validade.strftime('%d/%m/%Y') }}</span>{% else %}<span class="badge b-cinza">Não realizado</span>{% endif %}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -120,6 +121,7 @@
               {% if m._situacao == 'Válido' %}<span class="badge b-verde">Válido</span>
               {% elif m._situacao == 'A vencer' %}<span class="badge b-amarelo">A vencer</span>
               {% elif m._situacao == 'Vencido' %}<span class="badge b-vermelho">Vencido</span>
+              {% elif m._situacao == 'Reprovado' %}<span class="badge b-roxo">Reprovado</span>
               {% elif m._situacao == 'Não realizado' %}<span class="badge b-cinza">Não realizado</span>
               {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
             </td>
