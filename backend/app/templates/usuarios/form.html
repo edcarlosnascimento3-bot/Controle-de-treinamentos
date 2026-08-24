@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Editar usuário · {{ app_name }}{% endblock %}
+{% block content %}
+
+<h1>Editar usuário</h1>
+<p class="muted mb">Login: <strong>{{ u.username }}</strong></p>
+
+<form method="post" action="/usuarios/{{ u.id }}/editar" id="form-usuario">
+  <div class="card">
+    <div class="form-grid">
+      <div class="field"><label>Nome *</label><input type="text" name="nome" value="{{ u.nome }}" required></div>
+      <div class="field"><label>E-mail</label><input type="email" name="email" value="{{ u.email or '' }}"></div>
+      <div class="field">
+        <label>Nível de acesso</label>
+        <select name="role" class="js-role-select" {% if u.id == user.id %}disabled{% endif %}>
+          {% for valor, rotulo in roles %}
+          <option value="{{ valor }}" {% if u.role == valor %}selected{% endif %}>{{ rotulo }}</option>
+          {% endfor %}
+        </select>
+        {% if u.id == user.id %}
+        <span class="ajuda">Você não pode alterar o seu próprio nível de acesso.</span>
+        {% endif %}
+      </div>
+      <div class="field"><label>Nova senha (deixe vazio para manter)</label><input type="password" name="senha"></div>
+    </div>
+
+    <div class="permissoes-box mt">
+      <strong>Páginas visíveis</strong>
+      <p class="muted js-perm-nota" hidden>Administradores acessam todas as páginas automaticamente.</p>
+      <div class="permissoes-grid">
+        {% for p in paginas_form %}
+        <label class="perm-item">
+          <input type="checkbox" name="permissoes" value="{{ p.pagina.value }}" {% if p.pagina.value in perms_usuario %}checked{% endif %}>
+          {{ pagina_labels[p.pagina.value] }}
+        </label>
+        {% endfor %}
+      </div>
+      <p class="ajuda">Ao trocar o nível de acesso, as páginas sugeridas para o perfil são aplicadas automaticamente.</p>
+    </div>
+
+    <div class="field checkbox mt">
+      <input type="checkbox" name="ativo" id="ativo" {% if u.ativo %}checked{% endif %}>
+      <label for="ativo">Ativo</label>
+    </div>
+  </div>
+
+  <div class="flex gap">
+    <button class="btn btn-primary" type="submit">Salvar</button>
+    <a class="btn btn-secondary" href="/usuarios">Cancelar</a>
+  </div>
+</form>
+
+<script>
+(function () {
+  var DEFAULTS = {
+    admin: null,
+    rh: ['painel','funcionarios','treinamentos','matriculas','relatorios','setores','cargos','gestores','categorias','kpis','inativos'],
+    gestor: ['painel','relatorios','setores','cargos','gestores','categorias','kpis'],
+    colaborador: ['painel'],
+    visualizador: ['matriculas']
+  };
+
+  var form = document.getElementById('form-usuario');
+  var select = form.querySelector('.js-role-select');
+  var nota = form.querySelector('.js-perm-nota');
+  var boxes = form.querySelectorAll('input[name="permissoes"]');
+
+  function estadoAdmin(isAdmin) {
+    boxes.forEach(function (box) { box.disabled = isAdmin; });
+    if (nota) nota.hidden = !isAdmin;
+  }
+
+  function aplicarPadroes(role) {
+    var isAdmin = role === 'admin';
+    estadoAdmin(isAdmin);
+    if (!isAdmin) {
+      var defaults = DEFAULTS[role] || [];
+      boxes.forEach(function (box) {
+        box.checked = defaults.indexOf(box.value) !== -1;
+      });
+    }
+  }
+
+  if (!select) return;
+
+  // Ao carregar: apenas aplica o bloqueio de administrador.
+  // As caixas marcadas no banco permanecem como estão.
+  estadoAdmin(select.value === 'admin');
+
+  if (select.disabled) return;
+
+  // Só reaplica os padrões quando o nível de acesso é alterado.
+  select.addEventListener('change', function () {
+    aplicarPadroes(select.value);
+  });
+})();
+</script>
+
+{% endblock %}

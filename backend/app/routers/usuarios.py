@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..deps import require_roles
-from ..models import MENU_LATERAL, PAGINA_LABELS, PAGINA_SOMENTE_ADMIN, Pagina, Role, User
+from ..models import MENU_LATERAL, PAGINA_LABELS, PAGINA_SOMENTE_ADMIN, ROLE_LABELS, Pagina, Role, User
 from ..security import hash_password
 from ..templating import render
 
@@ -54,14 +54,42 @@ def listar(
 ):
     usuarios = db.query(User).order_by(User.username).all()
     paginas_form = [p for p in MENU_LATERAL if p["pagina"] not in PAGINA_SOMENTE_ADMIN]
+    roles = [(r.value, label) for r, label in ROLE_LABELS.items()]
     return render(
         request,
         "usuarios/list.html",
         {
             "user": user,
             "usuarios": usuarios,
+            "roles": roles,
             "paginas_form": paginas_form,
             "pagina_labels": PAGINA_LABELS,
+        },
+    )
+
+
+@router.get("/{usuario_id}/editar", response_class=HTMLResponse)
+def formulario_editar(
+    usuario_id: int,
+    request: Request,
+    user: User = Depends(PERM),
+    db: Session = Depends(get_db),
+):
+    u = db.get(User, usuario_id)
+    if not u:
+        raise HTTPException(404, "Usuário não encontrado.")
+    paginas_form = [p for p in MENU_LATERAL if p["pagina"] not in PAGINA_SOMENTE_ADMIN]
+    roles = [(r.value, label) for r, label in ROLE_LABELS.items()]
+    return render(
+        request,
+        "usuarios/form.html",
+        {
+            "user": user,
+            "u": u,
+            "roles": roles,
+            "paginas_form": paginas_form,
+            "pagina_labels": PAGINA_LABELS,
+            "perms_usuario": u.lista_permissoes,
         },
     )
 
@@ -69,10 +97,10 @@ def listar(
 @router.post("")
 def criar(
     request: Request,
-    username: str = Form(...),
-    nome: str = Form(...),
+    username: str = Form(""),
+    nome: str = Form(""),
     email: str = Form(""),
-    senha: str = Form(...),
+    senha: str = Form(""),
     role: str = Form(Role.VISUALIZADOR.value),
     permissoes: list[str] = Form([]),
     user: User = Depends(PERM),
@@ -111,7 +139,7 @@ def criar(
 def atualizar(
     usuario_id: int,
     request: Request,
-    nome: str = Form(...),
+    nome: str = Form(""),
     email: str = Form(""),
     senha: str = Form(""),
     role: str = Form(Role.VISUALIZADOR.value),
@@ -126,7 +154,7 @@ def atualizar(
 
     nome = _limpar(nome)
     if not nome:
-        return RedirectResponse("/usuarios?erro=" + quote("Informe o nome."), status_code=303)
+        return RedirectResponse(f"/usuarios/{usuario_id}/editar?erro=" + quote("Informe o nome."), status_code=303)
 
     u.nome = nome
     u.email = _limpar(email)
@@ -135,25 +163,25 @@ def atualizar(
     sera_ativo = ativo == "on"
 
     if u.id == user.id and u.role != novo_role:
-        return RedirectResponse("/usuarios?erro=" + quote("Você não pode alterar o próprio nível de acesso."), status_code=303)
+        return RedirectResponse(f"/usuarios/{usuario_id}/editar?erro=" + quote("Você não pode alterar o próprio nível de acesso."), status_code=303)
 
     if u.role == Role.ADMIN and u.ativo and (novo_role != Role.ADMIN or not sera_ativo):
         if _outros_admins_ativos(db, u.id) == 0:
-            return RedirectResponse("/usuarios?erro=" + quote("O sistema precisa de pelo menos um administrador ativo."), status_code=303)
+            return RedirectResponse(f"/usuarios/{usuario_id}/editar?erro=" + quote("O sistema precisa de pelo menos um administrador ativo."), status_code=303)
 
     if u.id == user.id and not sera_ativo:
-        return RedirectResponse("/usuarios?erro=" + quote("Você não pode desativar o próprio usuário."), status_code=303)
+        return RedirectResponse(f"/usuarios/{usuario_id}/editar?erro=" + quote("Você não pode desativar o próprio usuário."), status_code=303)
 
     u.role = novo_role
     u.ativo = sera_ativo
     u.permissoes = _normalizar_permissoes(novo_role, permissoes)
     if senha:
         if len(senha) < 8:
-            return RedirectResponse("/usuarios?erro=" + quote("A senha deve ter ao menos 8 caracteres."), status_code=303)
+            return RedirectResponse(f"/usuarios/{usuario_id}/editar?erro=" + quote("A senha deve ter ao menos 8 caracteres."), status_code=303)
         u.password_hash = hash_password(senha)
 
     if u.id == user.id and u.ativo is False:
-        return RedirectResponse("/usuarios?erro=" + quote("Você não pode desativar o próprio usuário."), status_code=303)
+        return RedirectResponse(f"/usuarios/{usuario_id}/editar?erro=" + quote("Você não pode desativar o próprio usuário."), status_code=303)
 
     db.commit()
     return RedirectResponse("/usuarios?ok=" + quote("Usuário atualizado."), status_code=303)

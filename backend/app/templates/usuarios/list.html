@@ -3,56 +3,20 @@
 {% block content %}
 
 <h1>Usuários do sistema</h1>
-<p class="muted mb">Crie logins para acessar o sistema e defina quais páginas cada usuário pode visualizar.</p>
+<p class="muted mb">Crie logins para acessar o sistema e defina, na edição de cada usuário, quais páginas ele pode visualizar.</p>
 
 <div class="card">
   <table class="tabela">
     <thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Situação</th><th></th></tr></thead>
     <tbody>
       {% for u in usuarios %}
-      <tr data-role="{{ u.role }}">
+      <tr>
         <td>{{ u.username }}</td>
         <td>{{ u.nome }}</td>
         <td>{% if u.role == 'admin' %}<span class="badge b-vermelho badge-forte">{{ u.role_label }}</span>{% else %}<span class="badge b-amarelo badge-forte">{{ u.role_label }}</span>{% endif %}</td>
         <td>{% if u.ativo %}<span class="badge b-verde">Ativo</span>{% else %}<span class="badge b-cinza">Inativo</span>{% endif %}</td>
         <td>
-          <details>
-            <summary class="btn btn-xs btn-secondary">Editar</summary>
-            {% set perms_usuario = u.lista_permissoes %}
-            <form method="post" action="/usuarios/{{ u.id }}/editar" class="form-usuario" style="margin-top:8px;max-width:520px">
-              <div class="field"><label>Nome</label><input type="text" name="nome" value="{{ u.nome }}" required></div>
-              <div class="field"><label>E-mail</label><input type="email" name="email" value="{{ u.email or '' }}"></div>
-              <div class="field"><label>Perfil</label>
-                <select name="role" class="js-role-select">
-                  <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Administrador</option>
-                  <option value="visualizador" {% if u.role == 'visualizador' %}selected{% endif %}>Visualizador</option>
-                  {% if u.role not in ('admin', 'visualizador') %}
-                  <option value="{{ u.role }}" selected>{{ u.role_label }} (atual)</option>
-                  {% endif %}
-                </select>
-              </div>
-              <div class="field"><label>Nova senha (deixe vazio para manter)</label><input type="password" name="senha"></div>
-
-              <div class="permissoes-box">
-                <strong>Páginas visíveis</strong>
-                <p class="muted js-perm-nota" hidden>Administradores acessam todas as páginas automaticamente.</p>
-                <div class="permissoes-grid">
-                  {% for p in paginas_form %}
-                  <label class="perm-item">
-                    <input type="checkbox" name="permissoes" value="{{ p.pagina.value }}" data-default="{% if p.pagina.value in perms_usuario %}1{% endif %}" {% if p.pagina.value in perms_usuario %}checked{% endif %}>
-                    {{ pagina_labels[p.pagina.value] }}
-                  </label>
-                  {% endfor %}
-                </div>
-              </div>
-
-              <div class="field checkbox">
-                <input type="checkbox" name="ativo" id="ativo_{{ u.id }}" {% if u.ativo %}checked{% endif %}>
-                <label for="ativo_{{ u.id }}">Ativo</label>
-              </div>
-              <button class="btn btn-primary btn-sm" type="submit">Salvar</button>
-            </form>
-          </details>
+          <a class="btn btn-xs btn-secondary" href="/usuarios/{{ u.id }}/editar">Editar</a>
           {% if u.username != 'admin' %}
           <form method="post" action="/usuarios/{{ u.id }}/excluir" onsubmit="return confirm('Excluir este usuário?');" style="display:inline">
             <button class="btn btn-xs btn-ghost" type="submit">Excluir</button>
@@ -73,15 +37,17 @@
       <div class="field"><label>Nome *</label><input type="text" name="nome" required></div>
       <div class="field"><label>E-mail</label><input type="email" name="email"></div>
       <div class="field"><label>Senha *</label><input type="password" name="senha" required></div>
-      <div class="field"><label>Perfil</label>
+      <div class="field">
+        <label>Nível de acesso</label>
         <select name="role" class="js-role-select">
-          <option value="admin">Administrador</option>
-          <option value="visualizador" selected>Visualizador</option>
+          {% for valor, rotulo in roles %}
+          <option value="{{ valor }}" {% if valor == 'visualizador' %}selected{% endif %}>{{ rotulo }}</option>
+          {% endfor %}
         </select>
       </div>
     </div>
 
-    <div class="permissoes-box">
+    <div class="permissoes-box mt">
       <strong>Páginas visíveis</strong>
       <p class="muted js-perm-nota" hidden>Administradores acessam todas as páginas automaticamente.</p>
       <div class="permissoes-grid">
@@ -108,34 +74,30 @@
     visualizador: ['matriculas']
   };
 
-  function aplicar(form, role) {
-    var boxes = form.querySelectorAll('input[name="permissoes"]');
-    var nota = form.querySelector('.js-perm-nota');
+  var form = document.getElementById('form-novo-usuario');
+  var select = form.querySelector('.js-role-select');
+  var nota = form.querySelector('.js-perm-nota');
+  var boxes = form.querySelectorAll('input[name="permissoes"]');
+
+  function aplicarPadroes(role) {
     var isAdmin = role === 'admin';
-    boxes.forEach(function (box) {
-      box.disabled = isAdmin;
-      if (isAdmin) {
-        box.checked = false;
-      } else {
-        var defaults = DEFAULTS[role];
-        box.checked = !!(defaults && defaults.indexOf(box.value) !== -1);
-      }
-    });
+    boxes.forEach(function (box) { box.disabled = isAdmin; });
     if (nota) nota.hidden = !isAdmin;
+    if (!isAdmin) {
+      var defaults = DEFAULTS[role] || [];
+      boxes.forEach(function (box) {
+        box.checked = defaults.indexOf(box.value) !== -1;
+      });
+    }
   }
 
-  function initForm(form) {
-    var select = form.querySelector('.js-role-select');
-    if (!select) return;
-    aplicar(form, select.value);
-    select.addEventListener('change', function () {
-      aplicar(form, select.value);
-    });
-  }
+  if (!select) return;
 
-  document.querySelectorAll('.form-usuario').forEach(initForm);
-  var novo = document.getElementById('form-novo-usuario');
-  if (novo) initForm(novo);
+  // Estado inicial respeita o que está marcado no HTML (padrão do perfil).
+  // Os padrões só são reaplicados quando o nível de acesso muda.
+  select.addEventListener('change', function () {
+    aplicarPadroes(select.value);
+  });
 })();
 </script>
 
