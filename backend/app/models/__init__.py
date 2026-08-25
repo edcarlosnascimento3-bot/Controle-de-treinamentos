@@ -10,6 +10,7 @@ from .enums import (
     Role,
 )
 from .funcionario import Cargo, Funcionario, Setor
+from .funcionario_treinamento import funcionario_treinamento
 from .gestor import Gestor
 from .matricula import Certificado, Matricula
 from .treinamento import Treinamento
@@ -28,6 +29,7 @@ __all__ = [
     "Cargo",
     "Funcionario",
     "Setor",
+    "funcionario_treinamento",
     "Gestor",
     "Certificado",
     "Matricula",

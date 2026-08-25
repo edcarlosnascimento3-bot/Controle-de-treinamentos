@@ -143,6 +143,7 @@ def novo(
             "funcionario": None,
             "setores": db.query(Setor).order_by(Setor.nome).all(),
             "cargos": db.query(Cargo).order_by(Cargo.nome).all(),
+            "treinamentos": db.query(Treinamento).filter(Treinamento.ativo == True).order_by(Treinamento.nome).all(),
         },
     )
 
@@ -163,6 +164,7 @@ def criar(
     cargo_id: int | None = Form(None),
     novo_setor: str = Form(""),
     novo_cargo: str = Form(""),
+    treinamentos_ids: list[int] = Form([]),
     foto: UploadFile | None = File(None),
     user: User = Depends(PERM),
     db: Session = Depends(get_db),
@@ -189,6 +191,11 @@ def criar(
         foto=conteudo_foto,
         foto_tipo=tipo_foto,
     )
+    ids_obrigatorios = [i for i in treinamentos_ids if i]
+    if ids_obrigatorios:
+        f.treinamentos_obrigatorios = (
+            db.query(Treinamento).filter(Treinamento.id.in_(ids_obrigatorios)).all()
+        )
     try:
         db.add(f)
         db.commit()
@@ -294,6 +301,7 @@ def editar(
             "funcionario": f,
             "setores": db.query(Setor).order_by(Setor.nome).all(),
             "cargos": db.query(Cargo).order_by(Cargo.nome).all(),
+            "treinamentos": db.query(Treinamento).filter(Treinamento.ativo == True).order_by(Treinamento.nome).all(),
         },
     )
 
@@ -315,6 +323,7 @@ def atualizar(
     cargo_id: int | None = Form(None),
     novo_setor: str = Form(""),
     novo_cargo: str = Form(""),
+    treinamentos_ids: list[int] = Form([]),
     foto: UploadFile | None = File(None),
     user: User = Depends(PERM),
     db: Session = Depends(get_db),
@@ -344,6 +353,12 @@ def atualizar(
     f.unidade = _limpar(unidade)
     f.setor_id = _select_setor(db, novo_setor, setor_id)
     f.cargo_id = _select_cargo(db, novo_cargo, cargo_id)
+    ids_obrigatorios = [i for i in treinamentos_ids if i]
+    f.treinamentos_obrigatorios = (
+        db.query(Treinamento).filter(Treinamento.id.in_(ids_obrigatorios)).all()
+        if ids_obrigatorios
+        else []
+    )
     try:
         db.commit()
     except Exception:

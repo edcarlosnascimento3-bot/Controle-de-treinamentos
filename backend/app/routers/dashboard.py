@@ -1,4 +1,5 @@
 from datetime import date
+from types import SimpleNamespace
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -77,6 +78,21 @@ def dashboard(
     a_vencer.sort(key=lambda m: m.data_validade or date.max)
     vencidos.sort(key=lambda m: (m._situacao == "Não realizado", m.data_validade or date.min), reverse=True)
 
+    funcionarios_ativos = (
+        db.query(Funcionario)
+        .options(joinedload(Funcionario.treinamentos_obrigatorios))
+        .filter(Funcionario.ativo == True)
+        .order_by(Funcionario.nome)
+        .all()
+    )
+    vinculos = {(m.funcionario_id, m.treinamento_id) for m in matriculas}
+    vencidos.extend(
+        SimpleNamespace(funcionario=f, treinamento=t, data_validade=None, _situacao="Obrigatório")
+        for f in funcionarios_ativos
+        for t in f.treinamentos_obrigatorios
+        if (f.id, t.id) not in vinculos
+    )
+
     sel_funcionario = db.get(Funcionario, funcionario_id) if funcionario_id else None
     sel_matriculas = None
     if sel_funcionario:
@@ -97,7 +113,7 @@ def dashboard(
             "a_vencer": a_vencer[:15],
             "qtd_a_vencer": len(a_vencer),
             "qtd_validos": len(validos),
-            "funcionarios": db.query(Funcionario).filter(Funcionario.ativo == True).order_by(Funcionario.nome).all(),
+            "funcionarios": funcionarios_ativos,
             "sel_funcionario": sel_funcionario,
             "sel_matriculas": sel_matriculas,
             "funcao": "admin_rh",
@@ -121,6 +137,17 @@ def _dashboard_gestor(request, user, db, hoje, funcionario_id=None):
     a_vencer = [m for m in matriculas if m._situacao == "A vencer"]
     vencidos.sort(key=lambda m: (m._situacao == "Não realizado", m.data_validade or date.min), reverse=True)
     a_vencer.sort(key=lambda m: m.data_validade or date.max)
+
+    vinculos = {(m.funcionario_id, m.treinamento_id) for m in matriculas}
+    for f in funcionarios:
+        f.treinamentos_obrigatorios  # força o carregamento
+    vencidos.extend(
+        SimpleNamespace(funcionario=f, treinamento=t, data_validade=None, _situacao="Obrigatório")
+        for f in funcionarios
+        for t in f.treinamentos_obrigatorios
+        if (f.id, t.id) not in vinculos
+    )
+
     sel_funcionario = db.get(Funcionario, funcionario_id) if funcionario_id else None
     sel_matriculas = None
     if sel_funcionario:

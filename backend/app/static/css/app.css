@@ -325,6 +325,15 @@ select.busca-colaborador:focus {
 }
 .badge-forte { font-weight: 700; }
 .badge-nota { font-size: 16px; padding: 4px 12px; }
+.lista-treinamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.check-opcao { display: flex; align-items: center; gap: 8px; font-weight: normal; }
+.check-opcao input { width: auto; margin: 0; }
 .b-verde { background: var(--verde-fundo); color: var(--verde); }
 .b-amarelo { background: var(--amarelo-fundo); color: var(--amarelo); }
 .b-vermelho { background: var(--vermelho-fundo); color: var(--vermelho); }

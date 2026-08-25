@@ -49,6 +49,11 @@ class Funcionario(Base):
 
     setor: Mapped[Setor | None] = relationship(back_populates="funcionarios", lazy="joined")
     cargo: Mapped[Cargo | None] = relationship(back_populates="funcionarios", lazy="joined")
+    treinamentos_obrigatorios: Mapped[list["Treinamento"]] = relationship(
+        "Treinamento",
+        secondary="funcionario_treinamentos",
+        lazy="selectin",
+    )
     matriculas: Mapped[list["Matricula"]] = relationship(
         back_populates="funcionario", cascade="all, delete-orphan", lazy="selectin"
     )

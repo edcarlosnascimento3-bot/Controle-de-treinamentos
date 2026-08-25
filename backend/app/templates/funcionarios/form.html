@@ -100,6 +100,19 @@
     </div>
   </div>
 
+  <div class="card">
+    <h2>Treinamentos obrigatórios</h2>
+    <p class="ajuda">Marque os treinamentos exigidos para este funcionário. Os obrigatórios ainda não realizados aparecem no Painel em Alerta.</p>
+    <div class="lista-treinamentos">
+      {% for t in treinamentos %}
+      <label class="check-opcao">
+        <input type="checkbox" name="treinamentos_ids" value="{{ t.id }}" {% if (funcionario and t in funcionario.treinamentos_obrigatorios) or (not funcionario and t.integracao) %}checked{% endif %}>
+        {{ t.nome }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
   <div class="flex gap">
     <button type="submit" class="btn btn-primary">Salvar</button>
     <a class="btn btn-secondary" href="{{ '/funcionarios/' ~ funcionario.id if funcionario else '/funcionarios' }}">Cancelar</a>
