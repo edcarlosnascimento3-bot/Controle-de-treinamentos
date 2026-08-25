@@ -64,7 +64,7 @@
         </td>
         <td>
           {% if m.nota is not none %}
-          <span class="badge {{ 'b-verde' if m.nota >= 7 else 'b-vermelho' }}">{{ m.nota }}</span>
+          <span class="badge badge-nota {{ 'b-verde' if m.nota >= 7 else 'b-vermelho' }}">{{ m.nota }}</span>
           {% else %}—{% endif %}
         </td>
         <td>

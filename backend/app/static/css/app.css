@@ -324,6 +324,7 @@ select.busca-colaborador:focus {
   white-space: nowrap;
 }
 .badge-forte { font-weight: 700; }
+.badge-nota { font-size: 16px; padding: 4px 12px; }
 .b-verde { background: var(--verde-fundo); color: var(--verde); }
 .b-amarelo { background: var(--amarelo-fundo); color: var(--amarelo); }
 .b-vermelho { background: var(--vermelho-fundo); color: var(--vermelho); }

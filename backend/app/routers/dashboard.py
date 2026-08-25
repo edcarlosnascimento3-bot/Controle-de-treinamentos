@@ -65,7 +65,12 @@ def dashboard(
     ).join(Funcionario).filter(Funcionario.ativo == True).all()
     query_situacao(matriculas, hoje)
 
-    vencidos = [m for m in matriculas if m._situacao in ("Vencido", "Não realizado", "Reprovado")]
+    vencidos = [
+        m
+        for m in matriculas
+        if m._situacao in ("Vencido", "Não realizado", "Reprovado")
+        or (m._situacao == "A vencer" and (m.data_validade - hoje).days <= 30)
+    ]
     a_vencer = [m for m in matriculas if m._situacao == "A vencer"]
     validos = [m for m in matriculas if m._situacao == "Válido"]
 
@@ -107,7 +112,12 @@ def _dashboard_gestor(request, user, db, hoje, funcionario_id=None):
         joinedload(Matricula.treinamento),
     ).join(Funcionario).filter(Funcionario.ativo == True).all()
     query_situacao(matriculas, hoje)
-    vencidos = [m for m in matriculas if m._situacao in ("Vencido", "Não realizado", "Reprovado")]
+    vencidos = [
+        m
+        for m in matriculas
+        if m._situacao in ("Vencido", "Não realizado", "Reprovado")
+        or (m._situacao == "A vencer" and (m.data_validade - hoje).days <= 30)
+    ]
     a_vencer = [m for m in matriculas if m._situacao == "A vencer"]
     vencidos.sort(key=lambda m: (m._situacao == "Não realizado", m.data_validade or date.min), reverse=True)
     a_vencer.sort(key=lambda m: m.data_validade or date.max)
@@ -149,7 +159,12 @@ def _dashboard_colaborador(request, user, db, hoje):
         )
     matriculas = funcionario.matriculas
     query_situacao(matriculas, hoje)
-    vencidos = [m for m in matriculas if m._situacao in ("Vencido", "Não realizado")]
+    vencidos = [
+        m
+        for m in matriculas
+        if m._situacao in ("Vencido", "Não realizado")
+        or (m._situacao == "A vencer" and (m.data_validade - hoje).days <= 30)
+    ]
     a_vencer = [m for m in matriculas if m._situacao == "A vencer"]
     vencidos.sort(key=lambda m: (m._situacao == "Não realizado", m.data_validade or date.min), reverse=True)
     a_vencer.sort(key=lambda m: m.data_validade or date.max)
