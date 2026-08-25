@@ -54,10 +54,22 @@ def cartao(
     funcionario_id: int,
     token: str,
     request: Request,
+    acesso: str = "",
     db: Session = Depends(get_db),
 ):
     """Cartão de treinamentos acessível apenas por link autorizado + checagem do nome cadastrado."""
     f = _carregar(db, funcionario_id, token)
+    if acesso == "1" and not _autorizado(request, f.id, token):
+        nome_cookie, valor = cookie_confirmacao(f.id, token)
+        resposta = RedirectResponse(url_cartao_publico(f.id), status_code=303)
+        resposta.set_cookie(
+            nome_cookie,
+            valor,
+            max_age=COOKIE_MAX_AGE,
+            httponly=True,
+            samesite="lax",
+        )
+        return resposta
     if not _autorizado(request, f.id, token):
         return render(
             request,
@@ -128,7 +140,7 @@ def qr_code(
 ):
     """QR Code apontando para o link assinado do cartão."""
     f = _carregar(db, funcionario_id, token)
-    destino = f"{url_base(request)}{url_cartao_publico(f.id)}"
+    destino = f"{url_base(request)}{url_cartao_publico(f.id)}?acesso=1"
     qr = segno.make(destino, error="m", boost_error=True)
     buf = io.BytesIO()
     qr.save(buf, kind="svg", scale=8, border=1, dark="#1e3a8a", light="#ffffff")
