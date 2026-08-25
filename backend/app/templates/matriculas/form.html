@@ -36,10 +36,6 @@
         <input type="text" name="instrutor" value="{{ matricula.instrutor or '' }}">
       </div>
       <div class="linha-avaliacao">
-        <div class="field campo-observacoes">
-          <label>Observações</label>
-          <textarea name="observacoes" rows="1">{{ matricula.observacoes or '' }}</textarea>
-        </div>
         <div class="field campo-avaliacao">
           <label>Avaliação</label>
           <div class="avaliacao-controles">
@@ -60,6 +56,10 @@
             <span id="status-nota" class="badge b-cinza">—</span>
           </div>
         </div>
+        <div class="field campo-observacoes">
+          <label>Observações</label>
+          <textarea name="observacoes" rows="4">{{ matricula.observacoes or '' }}</textarea>
+        </div>
       </div>
     </div>
   </div>
@@ -79,7 +79,7 @@
     function ajustarNota() {
       var opcao = selNota.options[selNota.selectedIndex];
       var texto = opcao ? opcao.text : '';
-      selNota.style.width = (texto.length + 4) + 'ch';
+      selNota.style.width = (texto.length + 7) + 'ch';
     }
 
     function atualizar() {

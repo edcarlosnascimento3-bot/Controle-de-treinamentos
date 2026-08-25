@@ -235,7 +235,7 @@ form.inline { display: inline-block; margin: 0 0 0 6px; }
   align-items: flex-end;
   gap: 16px;
 }
-.campo-observacoes { flex: 1 1 240px; min-width: 200px; }
+.campo-observacoes { flex: 1 1 220px; max-width: 320px; min-width: 180px; }
 .campo-avaliacao { flex: 0 0 auto; }
 .avaliacao-controles {
   display: flex;
@@ -329,7 +329,7 @@ select.busca-colaborador:focus {
 .b-azul { background: #dbeafe; color: var(--cor-primaria); }
 .b-roxo { background: var(--roxo-fundo); color: #ffffff; font-weight: 700; }
 .b-verde-escuro { background: #14532d; color: #ffffff; font-weight: 700; }
-.b-vermelho-escuro { background: #7f1d1d; color: #000000; font-weight: 700; }
+.b-vermelho-escuro { background: #7f1d1d; color: #ffffff; font-weight: 700; }
 
 /* ---------------- alertas / flashes ---------------- */
 
