@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from ..database import get_db
 from ..deps import require_login, require_pagina, require_roles
-from ..models import Categoria, CategoriaTreinamento, Certificado, Funcionario, Matricula, Pagina, Role, Treinamento, User
+from ..models import Categoria, Cargo, Certificado, Funcionario, Matricula, Pagina, Role, Setor, Treinamento, User
 from ..services import (
     CertificadoInvalido,
     calcular_data_validade,
@@ -61,7 +61,8 @@ def listar(
     db: Session = Depends(get_db),
     busca: str = "",
     situacao: str = "",
-    categoria: str = "",
+    setor: str = "",
+    funcao: str = "",
 ):
     hoje = date.today()
     q = db.query(Matricula).options(
@@ -77,14 +78,21 @@ def listar(
                 Funcionario.matricula.ilike(termo),
             )
         )
-    if categoria:
-        q = q.join(Treinamento).filter(Treinamento.categoria == categoria)
+    if setor:
+        q = q.filter(Funcionario.setor.has(Setor.nome == setor))
+    if funcao:
+        q = q.filter(Funcionario.cargo.has(Cargo.nome == funcao))
 
     matriculas = q.order_by(Matricula.data_realizacao.desc()).all()
     matriculas = query_situacao(matriculas, hoje)
 
     if situacao and situacao != "todas":
-        matriculas = [m for m in matriculas if m._situacao == situacao]
+        if situacao == "Realizado":
+            matriculas = [m for m in matriculas if m.data_realizacao]
+        elif situacao == "Não realizado":
+            matriculas = [m for m in matriculas if not m.data_realizacao]
+        else:
+            matriculas = [m for m in matriculas if m._situacao == situacao]
 
     return render(
         request,
@@ -92,10 +100,12 @@ def listar(
         {
             "user": user,
             "matriculas": matriculas,
-            "categorias": db.query(Categoria).order_by(Categoria.nome).all(),
+            "setores": db.query(Setor).order_by(Setor.nome).all(),
+            "cargos": db.query(Cargo).order_by(Cargo.nome).all(),
             "busca": busca,
             "situacao": situacao,
-            "categoria": categoria,
+            "setor": setor,
+            "funcao": funcao,
             "hoje": hoje,
             "pode_editar": user.role in (Role.ADMIN, Role.RH),
         },

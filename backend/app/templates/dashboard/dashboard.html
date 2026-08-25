@@ -17,7 +17,7 @@
     <div class="stat"><div class="num">{{ total_matriculas }}</div><div class="rotulo">Registros realizados</div></div>
     <div class="stat"><div class="num">{{ qtd_validos }}</div><div class="rotulo">Válidos</div></div>
     <div class="stat destaque-amarelo"><div class="num">{{ qtd_a_vencer }}</div><div class="rotulo">A vencer</div></div>
-    <div class="stat destaque-vermelho"><div class="num">{{ qtd_vencidos }}</div><div class="rotulo">Vencidos ou Não realizado</div></div>
+    <div class="stat destaque-vermelho"><div class="num">{{ qtd_vencidos }}</div><div class="rotulo">Alerta</div></div>
   </div>
 {% endif %}
 
@@ -25,7 +25,7 @@
   <div class="grid-stats">
     <div class="stat"><div class="num">{{ total_funcionarios }}</div><div class="rotulo">Funcionários ativos</div></div>
     <div class="stat destaque-amarelo"><div class="num">{{ qtd_a_vencer }}</div><div class="rotulo">A vencer</div></div>
-    <div class="stat destaque-vermelho"><div class="num">{{ qtd_vencidos }}</div><div class="rotulo">Vencidos ou Não realizado</div></div>
+    <div class="stat destaque-vermelho"><div class="num">{{ qtd_vencidos }}</div><div class="rotulo">Alerta</div></div>
   </div>
 {% endif %}
 
@@ -80,7 +80,7 @@
     </div>
     {% if not sel_funcionario %}
     <div class="card">
-      <h2>Vencidos ou Não realizado <span class="badge b-vermelho">{{ qtd_vencidos }}</span></h2>
+      <h2>Alerta <span class="badge b-vermelho">{{ qtd_vencidos }}</span></h2>
       {% if vencidos %}
         <table class="tabela">
           <thead><tr><th>Funcionário</th><th>Treinamento</th><th>Status</th></tr></thead>

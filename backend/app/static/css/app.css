@@ -272,7 +272,8 @@ form.inline { display: inline-block; margin: 0 0 0 6px; }
   border-radius: 8px;
   font-size: 14px;
 }
-.filtros .busca { min-width: 220px; }
+.filtros .busca { flex: 1 1 260px; min-width: 220px; }
+.filtros select { min-width: 170px; }
 
 select.busca-colaborador {
   width: 100%;

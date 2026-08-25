@@ -14,29 +14,33 @@
 
 <form method="get" action="/matriculas" class="filtros">
   <input class="busca" type="text" name="busca" value="{{ busca }}" placeholder="Buscar por funcionário ou matrícula">
-  <select name="situacao">
+  <select name="situacao" onchange="this.form.submit()">
     <option value="todas" {% if not situacao or situacao == 'todas' %}selected{% endif %}>Todas as situações</option>
-    <option value="Válido" {% if situacao == 'Válido' %}selected{% endif %}>Válido</option>
-    <option value="A vencer" {% if situacao == 'A vencer' %}selected{% endif %}>A vencer</option>
-    <option value="Vencido" {% if situacao == 'Vencido' %}selected{% endif %}>Vencido</option>
-    <option value="Reprovado" {% if situacao == 'Reprovado' %}selected{% endif %}>Reprovado</option>
     <option value="Não realizado" {% if situacao == 'Não realizado' %}selected{% endif %}>Não realizado</option>
-    <option value="Sem validade" {% if situacao == 'Sem validade' %}selected{% endif %}>Sem validade</option>
+    <option value="Realizado" {% if situacao == 'Realizado' %}selected{% endif %}>Realizado</option>
+    <option value="Reprovado" {% if situacao == 'Reprovado' %}selected{% endif %}>Reprovado</option>
+    <option value="Vencido" {% if situacao == 'Vencido' %}selected{% endif %}>Vencido</option>
+    <option value="A vencer" {% if situacao == 'A vencer' %}selected{% endif %}>A vencer</option>
   </select>
-  <select name="categoria">
-    <option value="">Todas as categorias</option>
-    {% for c in categorias %}
-    <option value="{{ c.nome }}" {% if categoria == c.nome %}selected{% endif %}>{{ c.nome }}</option>
+  <select name="setor" onchange="this.form.submit()">
+    <option value="">Todos os setores</option>
+    {% for s in setores %}
+    <option value="{{ s.nome }}" {% if setor == s.nome %}selected{% endif %}>{{ s.nome }}</option>
     {% endfor %}
   </select>
-  <button class="btn btn-secondary" type="submit">Filtrar</button>
+  <select name="funcao" onchange="this.form.submit()">
+    <option value="">Todas as funções</option>
+    {% for c in cargos %}
+    <option value="{{ c.nome }}" {% if funcao == c.nome %}selected{% endif %}>{{ c.nome }}</option>
+    {% endfor %}
+  </select>
 </form>
 
 <div class="card">
   <table class="tabela">
     <thead>
       <tr>
-        <th>Funcionário</th><th>Treinamento</th><th>Norma</th><th>Realização</th><th>Vencimento</th><th>Situação</th><th></th>
+        <th>Funcionário</th><th>Treinamento</th><th>Norma</th><th>Realização</th><th>Vencimento</th><th>Situação</th><th>Nota</th><th></th>
       </tr>
     </thead>
     <tbody>
@@ -59,6 +63,11 @@
           {% else %}<span class="badge b-cinza">Sem validade</span>{% endif %}
         </td>
         <td>
+          {% if m.nota is not none %}
+          <span class="badge {{ 'b-verde' if m.nota >= 7 else 'b-vermelho' }}">{{ m.nota }}</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
           <a class="btn btn-xs btn-secondary" href="/matriculas/{{ m.id }}">Ver</a>
           {% if pode_editar %}
           <a class="btn btn-xs btn-secondary" href="/matriculas/{{ m.id }}/editar">Editar</a>
@@ -66,7 +75,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="7" class="muted">Nenhum registro encontrado.</td></tr>
+      <tr><td colspan="8" class="muted">Nenhum registro encontrado.</td></tr>
       {% endfor %}
     </tbody>
   </table>
